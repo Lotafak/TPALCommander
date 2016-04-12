@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TPALCommander"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="350" Width="525" Loaded="Window_Loaded">
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="File"></MenuItem>
@@ -31,7 +31,7 @@
             <Label Content="{Binding Dir}"></Label>
             <ListView Grid.Column="0" Grid.Row="1"  HorizontalAlignment="Stretch" 
                       Margin="1,0,2,1" Name="LeftView" Background="Aqua" 
-                      SizeChanged="List_SizeChanged">
+                      SizeChanged="List_SizeChanged" >
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -40,20 +40,27 @@
                 </ListView.ItemContainerStyle>
                 <ListView.View>
                     <GridView>
+                        <GridViewColumn>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Image Source="{Binding Imagepath}" Width="20"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
                         <GridViewColumn Header="Name" 
                                         DisplayMemberBinding="{Binding Name}"
-                                        Width="Auto" />
+                                        Width="100" />
                         <GridViewColumn Header="Extention" 
                                         DisplayMemberBinding="{Binding Extension}"
-                                        Width="Auto" />
+                                        Width="60" />
                         <GridViewColumn Header="Weight" 
                                         DisplayMemberBinding="{Binding Size}"
-                                        Width="Auto"/>
+                                        Width="50"/>
                     </GridView>
                 </ListView.View>
             </ListView>
             <ListView Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch" 
-                      Margin="2,0,1,1" Name="RightView" Background="Red">
+                      Margin="2,0,1,1" Name="RightView" Background="Red" ItemsSource="{Binding}">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <EventSetter Event="MouseDoubleClick" Handler="listViewItem_MouseDoubleClick"/>
@@ -69,7 +76,7 @@
                                         DisplayMemberBinding="{Binding Extension}"
                                         Width="Auto" />
                         <GridViewColumn Header="Weight" 
-                                        DisplayMemberBinding="{Binding Weight}"
+                                        DisplayMemberBinding="{Binding Size}"
                                         Width="Auto"/>
                     </GridView>
                 </ListView.View>
