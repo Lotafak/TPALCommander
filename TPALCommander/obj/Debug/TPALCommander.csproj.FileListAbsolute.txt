@@ -1,1 +1,14 @@
 c:\users\pyra\documents\visual studio 2015\Projects\TPALCommander\TPALCommander\bin\Debug\TPALCommander.exe.config
+c:\users\pyra\documents\visual studio 2015\Projects\TPALCommander\TPALCommander\bin\Debug\TPALCommander.exe
+c:\users\pyra\documents\visual studio 2015\Projects\TPALCommander\TPALCommander\bin\Debug\TPALCommander.pdb
+c:\users\pyra\documents\visual studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\TPALCommander.csprojResolveAssemblyReference.cache
+c:\users\pyra\documents\visual studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\MainWindow.g.cs
+c:\users\pyra\documents\visual studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\App.g.cs
+c:\users\pyra\documents\visual studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\TPALCommander_MarkupCompile.cache
+c:\users\pyra\documents\visual studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\TPALCommander_MarkupCompile.lref
+c:\users\pyra\documents\visual studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\MainWindow.baml
+c:\users\pyra\documents\visual studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\TPALCommander.g.resources
+c:\users\pyra\documents\visual studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\TPALCommander.Properties.Resources.resources
+c:\users\pyra\documents\visual studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\TPALCommander.csproj.GenerateResource.Cache
+c:\users\pyra\documents\visual studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\TPALCommander.exe
+c:\users\pyra\documents\visual studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\TPALCommander.pdb

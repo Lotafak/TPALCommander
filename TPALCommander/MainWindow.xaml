@@ -6,7 +6,79 @@
         xmlns:local="clr-namespace:TPALCommander"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        
-    </Grid>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="File"></MenuItem>
+        </Menu>
+        <Menu DockPanel.Dock="Top" Height="24">
+            <MenuItem Width="24">
+                <MenuItem.Icon>
+                    <Image Source="Assets/icon-refresh-128.png"
+                           RenderOptions.BitmapScalingMode="Fant"/>
+                </MenuItem.Icon>
+            </MenuItem>
+        </Menu>
+        <Grid Background="AliceBlue" x:Name="MainGrid" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="24"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Column="0" x:Name="LeftGrid"/>
+            <Label Content="{Binding Dir}"></Label>
+            <ListView Grid.Column="0" Grid.Row="1"  HorizontalAlignment="Stretch" 
+                      Margin="1,0,2,1" Name="LeftView" Background="Aqua" 
+                      SizeChanged="List_SizeChanged">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Left" />
+                        <EventSetter Event="MouseDoubleClick" Handler="listViewItem_MouseDoubleClick"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Name" 
+                                        DisplayMemberBinding="{Binding Name}"
+                                        Width="Auto" />
+                        <GridViewColumn Header="Extention" 
+                                        DisplayMemberBinding="{Binding Extension}"
+                                        Width="Auto" />
+                        <GridViewColumn Header="Weight" 
+                                        DisplayMemberBinding="{Binding Size}"
+                                        Width="Auto"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <ListView Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch" 
+                      Margin="2,0,1,1" Name="RightView" Background="Red">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <EventSetter Event="MouseDoubleClick" Handler="listViewItem_MouseDoubleClick"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Name" 
+                                        DisplayMemberBinding="{Binding Name}"
+                                        Width="Auto" 
+                                        />
+                        <GridViewColumn Header="Extention" 
+                                        DisplayMemberBinding="{Binding Extension}"
+                                        Width="Auto" />
+                        <GridViewColumn Header="Weight" 
+                                        DisplayMemberBinding="{Binding Weight}"
+                                        Width="Auto"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </Grid>
+    </DockPanel>
 </Window>
+
+        
+
+
+        
