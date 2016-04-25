@@ -19,25 +19,34 @@
             </MenuItem>
         </Menu>
         <Grid Background="AliceBlue" x:Name="MainGrid" >
+            <Grid.InputBindings>
+                <KeyBinding Key="C" Modifiers="Ctrl" Command="ApplicationCommands.Open"/>
+            </Grid.InputBindings>
+            
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="24"/>
+                <RowDefinition Height="16"></RowDefinition>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid Grid.Column="0" x:Name="LeftGrid"/>
-            <Label Content="{Binding Dir}"></Label>
-            <ListView Grid.Column="0" Grid.Row="1"  HorizontalAlignment="Stretch" 
-                      Margin="1,0,2,1" Name="LeftView" Background="Aqua" 
-                      SizeChanged="List_SizeChanged" >
+            <!-- <Label Grid.Column="0" Grid.Row="0" Content="asdasdasdasdasd" HorizontalAlignment="Left"/> -->
+            <ListView Grid.Column="0" Grid.Row="2"  HorizontalAlignment="Stretch" 
+                      Margin="1,0,2,1" Name="LeftView" 
+                      SizeChanged="List_SizeChanged" ItemsSource="{Binding}">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
-                        <Setter Property="HorizontalContentAlignment" Value="Left" />
                         <EventSetter Event="MouseDoubleClick" Handler="listViewItem_MouseDoubleClick"/>
                     </Style>
                 </ListView.ItemContainerStyle>
+                <ListView.Resources>
+                    <Style TargetType="{x:Type GridViewColumnHeader}">
+                        <Setter Property="HorizontalContentAlignment" Value="Left" />
+                    </Style>
+                </ListView.Resources>
                 <ListView.View>
                     <GridView>
                         <GridViewColumn>
@@ -52,35 +61,54 @@
                                         Width="100" />
                         <GridViewColumn Header="Extention" 
                                         DisplayMemberBinding="{Binding Extension}"
-                                        Width="60" />
-                        <GridViewColumn Header="Weight" 
+                                        Width="60"/>
+                        <GridViewColumn Header="Size" 
                                         DisplayMemberBinding="{Binding Size}"
-                                        Width="50"/>
+                                        Width="100"/>
                     </GridView>
                 </ListView.View>
             </ListView>
-            <ListView Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch" 
-                      Margin="2,0,1,1" Name="RightView" Background="Red" ItemsSource="{Binding}">
+            <ListView Grid.Column="1" Grid.Row="2" HorizontalAlignment="Stretch" 
+                      Margin="2,0,1,1" Name="RightView" ItemsSource="{Binding}" SizeChanged="List_SizeChanged">
+                <!-- <ScrollViewer HorizontalScrollBarVisibility="Disabled"></ScrollViewer> -->
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <EventSetter Event="MouseDoubleClick" Handler="listViewItem_MouseDoubleClick"/>
+
                     </Style>
+
                 </ListView.ItemContainerStyle>
+                <ListView.Resources>
+                    <Style TargetType="{x:Type GridViewColumnHeader}">
+                        <Setter Property="HorizontalContentAlignment" Value="Left" />
+                    </Style>
+                </ListView.Resources>
                 <ListView.View>
                     <GridView>
+                        <GridViewColumn>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Image Source="{Binding Imagepath}" Width="20"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
                         <GridViewColumn Header="Name" 
                                         DisplayMemberBinding="{Binding Name}"
-                                        Width="Auto" 
+                                        Width="100" 
                                         />
                         <GridViewColumn Header="Extention" 
                                         DisplayMemberBinding="{Binding Extension}"
-                                        Width="Auto" />
-                        <GridViewColumn Header="Weight" 
+                                        Width="60" />
+                        <GridViewColumn Header="Size" 
                                         DisplayMemberBinding="{Binding Size}"
-                                        Width="Auto"/>
+                                        Width="2000"/>
                     </GridView>
                 </ListView.View>
             </ListView>
+            <ComboBox x:Name="leftComboBox" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Height="20" Margin="10,2,0,0" />
+            <ComboBox x:Name="rightComboBox" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Height="20" Margin="10,2,0,0" SelectionChanged="rightComboBox_SelectionChanged"/>
+            <Label x:Name="leftPathLabel" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Height="16" Padding="0" ScrollViewer.CanContentScroll="True" RenderTransformOrigin="0.5,0.516" Margin="10,0,0,0">Smt</Label>
+            <Label x:Name="rightPathLabel" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Height="16" Padding="0" ScrollViewer.CanContentScroll="True" RenderTransformOrigin="0.5,0.516" Margin="10,0,0,0">Smt</Label>
         </Grid>
     </DockPanel>
 </Window>
