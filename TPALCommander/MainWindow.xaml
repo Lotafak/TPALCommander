@@ -10,19 +10,26 @@
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="{Binding Path=FileMenuItem, Source={StaticResource Resources}}">
                     <MenuItem Header="{Binding Path=LanuageHeader, Source={StaticResource Resources}}">
-                        <MenuItem Name="EnglishMenuItem" Header="{Binding Path=EnglishMenuItem, Source={StaticResource Resources}}" IsCheckable="True" IsChecked="True" Click="MenuItem_Click"></MenuItem>
-                        <MenuItem Name="PolishMenuItem"  Header="{Binding Path=PolishMenuItem, Source={StaticResource Resources}}" IsCheckable="True" Click="MenuItem_Click"></MenuItem>
+                    <MenuItem Name="EnglishMenuItem" 
+                              Header="{Binding Path=EnglishMenuItem, Source={StaticResource Resources}}" 
+                                  IsCheckable="True" 
+                                  IsChecked="True" 
+                                  Click="MenuItem_Click"/>
+                    <MenuItem Name="PolishMenuItem" 
+                              Header="{Binding Path=PolishMenuItem, Source={StaticResource Resources}}" 
+                                  IsCheckable="True" 
+                                  Click="MenuItem_Click"/>
                     </MenuItem>
                 </MenuItem>
         </Menu>
         
-        <StatusBar DockPanel.Dock="Bottom" Height="24" Width="Auto" VerticalAlignment="Bottom"
-                   ToolTip="{Binding Path=StatusBarToolTip, Source={StaticResource Resources}}">
+        <StatusBar x:Name="StatusBar"  DockPanel.Dock="Bottom" Height="24" Width="Auto" VerticalAlignment="Bottom"
+                   ToolTip="{Binding Path=StatusBarToolTip, Source={StaticResource Resources}}" Visibility="Hidden">
             <StatusBarItem>
                 <TextBlock x:Name="StatusBarLabel" Text="Text" HorizontalAlignment="Left"/>
             </StatusBarItem>
             <StatusBarItem>
-                <ProgressBar Height="18" Width="200" HorizontalAlignment="Right" ClipToBounds="True"/>
+                <ProgressBar x:Name="ProgressBar" Height="18" Width="200" HorizontalAlignment="Right" ClipToBounds="True"/>
             </StatusBarItem>
         </StatusBar>
         <Menu DockPanel.Dock="Top" Height="24">

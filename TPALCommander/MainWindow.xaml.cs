@@ -2,7 +2,6 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -29,6 +28,8 @@ public class DirectoryEntry
     public EntryType Type { get; set; }
 
     public string Fullpath { get; set; }
+
+    public bool View { get; set; }
 }
 
 
@@ -41,9 +42,11 @@ namespace TPALCommander
     partial class MainWindow : Window
     {
 
-        ObservableCollection<DirectoryEntry> entries = new ObservableCollection<DirectoryEntry>();
+        ObservableCollection<DirectoryEntry> leftEntries = new ObservableCollection<DirectoryEntry>();
+        ObservableCollection<DirectoryEntry> rightEntries = new ObservableCollection<DirectoryEntry>();
         ObservableCollection<DirectoryEntry> subEntries = new ObservableCollection<DirectoryEntry>();
-        DirectoryEntry previous = null;
+        DirectoryEntry leftPreviousEntry = null;
+        DirectoryEntry rightPreviousEntry = null;
         private int ListHeaderSize = 50;
         public MainWindow()
         {
@@ -52,20 +55,13 @@ namespace TPALCommander
             InitializeComponent();
             //UpdateStatusLabel();
             ObservableCollection<DirectoryEntry> Collection = new ObservableCollection<DirectoryEntry>();
-            Collection.Add(new DirectoryEntry() { Name = "Xd", Date = DateTime.Now, Extension = "exe", Fullpath = "C:\\Fraps", Size = "1 000 kB", Type = EntryType.Dir, Imagepath = "Assets/Folder-icon.png" });
+            //Collection.Add(new DirectoryEntry() { Name = "Xd", Date = DateTime.Now, Extension = "exe", Fullpath = "C:\\Fraps", Size = "1 000 kB", Type = EntryType.Dir, Imagepath = "Assets/Folder-icon.png" });
             //LeftView.ItemsSource = Collection;
             LeftView.SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Disabled);
             RightView.SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Disabled);
             RightView.SetValue(ListViewItem.NameProperty, "RightItemView");
             AddHotKeys();
         }
-
-        //private void UpdateStatusLabel()
-        //{
-        //    DateTime dt = DateTime.Now;
-        //    StatusBarLabel.Text = dt.ToString("d", Properties.Resources.Culture) + "    " +
-        //        dt.ToString("t", Properties.Resources.Culture);
-        //}
 
         private void AddHotKeys()
         {
@@ -90,17 +86,23 @@ namespace TPALCommander
             MessageBox.Show("Copy!", "Copy");
             ListView listView = sender as ListView;
             //listView.
-
         }
 
         private void listViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var item = e.Source as ListViewItem;
-
             var entry = item.DataContext as DirectoryEntry;
 
-            doWork(entry);
+            if (LeftView.ItemContainerGenerator.IndexFromContainer(item) >= 0)
+            {
+                entry.View = false;
+            }
+            else
+            {
+                entry.View = true;
+            }
 
+            doWork(entry);
         }
 
         private void List_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -112,11 +114,8 @@ namespace TPALCommander
 
             gView.Columns[0].Width = 30.0d;
 
-
             gView.Columns[1].Width = (workingWidth - (gView.Columns[2].ActualWidth + gView.Columns[0].ActualWidth + gView.Columns[3].ActualWidth + 10)) > ListHeaderSize
                 ? workingWidth - (gView.Columns[2].ActualWidth + gView.Columns[0].ActualWidth + gView.Columns[3].ActualWidth) : ListHeaderSize;
-
-
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -133,15 +132,14 @@ namespace TPALCommander
                 Type = EntryType.Dir
             });
 
-            this.RightView.DataContext = subEntries;
-            this.LeftView.DataContext = subEntries;
+            this.RightView.DataContext = rightEntries;
+            this.LeftView.DataContext = leftEntries;
         }
 
         public void doWork(DirectoryEntry entry)
         {
             try
             {
-
                 if ((entry.Type == EntryType.Up))
                 {
                     if (entry.Fullpath.EndsWith("\\"))
@@ -156,64 +154,14 @@ namespace TPALCommander
 
                 if (entry.Type == EntryType.Dir)
                 {
-                    subEntries.Clear();
-                    if (entry.Fullpath.Length > 3)
+                    if (!entry.View)
                     {
-                        subEntries.Add(new DirectoryEntry()
-                        {
-                            Imagepath = "Assets/arrow_up_left.png",
-                            Extension = entry.Extension,
-                            Date = entry.Date,
-                            Fullpath = entry.Fullpath,
-                            Name = "...",
-                            Type = EntryType.Up
-                        });
+                        FillContainer(leftEntries, entry);
                     }
-
-
-                    foreach (string s in Directory.GetDirectories(entry.Fullpath))
+                    else
                     {
-                        //try
-                        //{
-                        DirectoryInfo dir = new DirectoryInfo(s);
-                        //System.Security.AccessControl.DirectorySecurity ds = Directory.GetAccessControl(dir.FullName);
-                        DirectoryEntry d = new DirectoryEntry()
-                        {
-                            Date = Directory.GetLastWriteTime(s),
-                            Fullpath = dir.FullName,
-                            Name = dir.Name,
-                            Imagepath = "Assets/Folder-icon.png",
-                            Type = EntryType.Dir
-                        };
-
-                        subEntries.Add(d);
-                        //}
-                        //catch (UnauthorizedAccessException exception)
-                        //{
-
-                        //}
+                        FillContainer(rightEntries, entry);
                     }
-                    foreach (string f in Directory.GetFiles(entry.Fullpath))
-                    {
-                        FileInfo file = new FileInfo(f);
-                        DirectoryEntry d = new DirectoryEntry()
-                        {
-                            Date = Directory.GetLastWriteTime(f),
-                            Name = file.Name,
-                            Type = EntryType.File,
-                            /*Imagepath = System.Drawing.Icon.ExtractAssociatedIcon(file.FullName),*/
-                            Fullpath = file.FullName
-                        };
-                        if (file.Extension.Length > 1)
-                            d.Extension = file.Extension.Substring(1);
-                        subEntries.Add(d);
-                    }
-
-                    //if(sender)
-
-                    RightView.DataContext = subEntries;
-                    LeftPathLabel.Content = String.Format(entry.Fullpath + "*.*");
-
                 }
             }
             catch (UnauthorizedAccessException exception)
@@ -223,13 +171,26 @@ namespace TPALCommander
             catch (System.IO.IOException exception)
             {
                 MessageBox.Show(exception.Message, exception.Source, MessageBoxButton.OK, MessageBoxImage.Error);
-                doWork(new DirectoryEntry()
+                //doWork(new DirectoryEntry()
+                //{
+                //    Fullpath = "C:\\",
+                //    Type = EntryType.Dir
+                //});
+                //doWork(previous);
+                //LeftComboBox.SelectedIndex = 1;
+                foreach (var item in RightComboBox.Items)
                 {
-                    Fullpath = "C:\\",
-                    Type = EntryType.Dir
-                });
-                RightComboBox.SelectedIndex = 0;
-
+                    if (!entry.View)
+                    {
+                        if (item.Equals(leftPreviousEntry.Fullpath))
+                            LeftComboBox.SelectedItem = item;
+                    }
+                    else
+                    {
+                        if (item.Equals(rightPreviousEntry.Fullpath))
+                            RightComboBox.SelectedItem = item;
+                    }
+                }
             }
 
             if (entry.Type == EntryType.File)
@@ -245,16 +206,86 @@ namespace TPALCommander
             }
         }
 
+        public void FillContainer(ObservableCollection<DirectoryEntry> collection , DirectoryEntry entry)
+        {
+            collection.Clear();
+            if (entry.Fullpath.Length > 3)
+            {
+                collection.Add(new DirectoryEntry()
+                {
+                    Imagepath = "Assets/arrow_up_left.png",
+                    Extension = entry.Extension,
+                    Date = entry.Date,
+                    Fullpath = entry.Fullpath,
+                    Name = "...",
+                    Type = EntryType.Up
+                });
+            }
+
+
+            foreach (string s in Directory.GetDirectories(entry.Fullpath))
+            {
+                DirectoryInfo dir = new DirectoryInfo(s);
+                DirectoryEntry d = new DirectoryEntry()
+                {
+                    Date = Directory.GetLastWriteTime(s),
+                    Fullpath = dir.FullName,
+                    Name = dir.Name,
+                    Imagepath = "Assets/Folder-icon.png",
+                    Type = EntryType.Dir
+                };
+
+                collection.Add(d);
+            }
+            foreach (string f in Directory.GetFiles(entry.Fullpath))
+            {
+                FileInfo file = new FileInfo(f);
+                DirectoryEntry d = new DirectoryEntry()
+                {
+                    Date = Directory.GetLastWriteTime(f),
+                    Name = file.Name,
+                    Type = EntryType.File,
+                    /*Imagepath = System.Drawing.Icon.ExtractAssociatedIcon(file.FullName),*/
+                    Fullpath = file.FullName
+                };
+                if (file.Extension.Length > 1)
+                    d.Extension = file.Extension.Substring(1);
+                collection.Add(d);
+            }
+            
+            //if(sender)
+            if (!entry.View)
+            {
+                LeftView.DataContext = collection;
+                LeftPathLabel.Content = String.Format(entry.Fullpath.EndsWith("\\") ? (entry.Fullpath) : entry.Fullpath + "\\");
+                leftPreviousEntry = entry;
+            }
+            else
+            {
+                RightView.DataContext = collection;
+                RightPathLabel.Content = String.Format(entry.Fullpath.EndsWith("\\") ? (entry.Fullpath) : entry.Fullpath + "\\");
+                rightPreviousEntry = entry;
+            }
+        }
+
         private void rightComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ComboBox cb = sender as ComboBox;
             String path = (String)cb.SelectedItem;
+            bool view = false;
+
+            if (cb == LeftComboBox)
+                view = false;
+            else
+                view = true;
+
             if (path != String.Empty)
             {
                 doWork(new DirectoryEntry()
                 {
                     Fullpath = path,
-                    Type = EntryType.Dir
+                    Type = EntryType.Dir,
+                    View = view
                 });
             }
         }
