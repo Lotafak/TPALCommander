@@ -1,21 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
-using System.Drawing;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 public enum EntryType
 {
@@ -53,10 +43,14 @@ namespace TPALCommander
 
         ObservableCollection<DirectoryEntry> entries = new ObservableCollection<DirectoryEntry>();
         ObservableCollection<DirectoryEntry> subEntries = new ObservableCollection<DirectoryEntry>();
+        DirectoryEntry previous = null;
         private int ListHeaderSize = 50;
         public MainWindow()
         {
-               InitializeComponent();
+            CultureResources.ChangeCulture(Properties.Settings.Default.DefaultCulture);
+
+            InitializeComponent();
+            //UpdateStatusLabel();
             ObservableCollection<DirectoryEntry> Collection = new ObservableCollection<DirectoryEntry>();
             Collection.Add(new DirectoryEntry() { Name = "Xd", Date = DateTime.Now, Extension = "exe", Fullpath = "C:\\Fraps", Size = "1 000 kB", Type = EntryType.Dir, Imagepath = "Assets/Folder-icon.png" });
             //LeftView.ItemsSource = Collection;
@@ -66,13 +60,20 @@ namespace TPALCommander
             AddHotKeys();
         }
 
+        //private void UpdateStatusLabel()
+        //{
+        //    DateTime dt = DateTime.Now;
+        //    StatusBarLabel.Text = dt.ToString("d", Properties.Resources.Culture) + "    " +
+        //        dt.ToString("t", Properties.Resources.Culture);
+        //}
+
         private void AddHotKeys()
         {
             try
             {
-                RoutedCommand firstSettings = new RoutedCommand();
-                firstSettings.InputGestures.Add(new KeyGesture(Key.C, ModifierKeys.Control));
-                CommandBindings.Add(new CommandBinding(firstSettings, copy_handler));
+                //RoutedCommand firstSettings = new RoutedCommand();
+                //firstSettings.InputGestures.Add(new KeyGesture(Key.C, ModifierKeys.Control));
+                //CommandBindings.Add(new CommandBinding(firstSettings, copy_handler));
 
                 //RoutedCommand secondSettings = new RoutedCommand();
                 //secondSettings.InputGestures.Add(new KeyGesture(Key.V, ModifierKeys.Control));
@@ -87,6 +88,9 @@ namespace TPALCommander
         private void copy_handler(object sender, ExecutedRoutedEventArgs e)
         {
             MessageBox.Show("Copy!", "Copy");
+            ListView listView = sender as ListView;
+            //listView.
+
         }
 
         private void listViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -95,7 +99,7 @@ namespace TPALCommander
 
             var entry = item.DataContext as DirectoryEntry;
 
-           doWork(entry);
+            doWork(entry);
 
         }
 
@@ -109,19 +113,19 @@ namespace TPALCommander
             gView.Columns[0].Width = 30.0d;
 
 
-            gView.Columns[1].Width = (workingWidth - (gView.Columns[2].ActualWidth + gView.Columns[0].ActualWidth + gView.Columns[3].ActualWidth)) > ListHeaderSize
+            gView.Columns[1].Width = (workingWidth - (gView.Columns[2].ActualWidth + gView.Columns[0].ActualWidth + gView.Columns[3].ActualWidth + 10)) > ListHeaderSize
                 ? workingWidth - (gView.Columns[2].ActualWidth + gView.Columns[0].ActualWidth + gView.Columns[3].ActualWidth) : ListHeaderSize;
 
-            
+
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             string[] logicalDrives = Directory.GetLogicalDrives();
-            leftComboBox.ItemsSource = logicalDrives;
-            leftComboBox.SelectedIndex = 0;
-            rightComboBox.ItemsSource = logicalDrives;
-            rightComboBox.SelectedIndex = 0;
+            LeftComboBox.ItemsSource = logicalDrives;
+            LeftComboBox.SelectedIndex = 0;
+            RightComboBox.ItemsSource = logicalDrives;
+            RightComboBox.SelectedIndex = 0;
 
             doWork(new DirectoryEntry()
             {
@@ -171,22 +175,22 @@ namespace TPALCommander
                     {
                         //try
                         //{
-                            DirectoryInfo dir = new DirectoryInfo(s);
-                            //System.Security.AccessControl.DirectorySecurity ds = Directory.GetAccessControl(dir.FullName);
-                            DirectoryEntry d = new DirectoryEntry()
-                            {
-                                Date = Directory.GetLastWriteTime(s),
-                                Fullpath = dir.FullName,
-                                Name = dir.Name,
-                                Imagepath = "Assets/Folder-icon.png",
-                                Type = EntryType.Dir
-                            };
+                        DirectoryInfo dir = new DirectoryInfo(s);
+                        //System.Security.AccessControl.DirectorySecurity ds = Directory.GetAccessControl(dir.FullName);
+                        DirectoryEntry d = new DirectoryEntry()
+                        {
+                            Date = Directory.GetLastWriteTime(s),
+                            Fullpath = dir.FullName,
+                            Name = dir.Name,
+                            Imagepath = "Assets/Folder-icon.png",
+                            Type = EntryType.Dir
+                        };
 
-                            subEntries.Add(d);
+                        subEntries.Add(d);
                         //}
                         //catch (UnauthorizedAccessException exception)
                         //{
-                            
+
                         //}
                     }
                     foreach (string f in Directory.GetFiles(entry.Fullpath))
@@ -208,7 +212,7 @@ namespace TPALCommander
                     //if(sender)
 
                     RightView.DataContext = subEntries;
-                    leftPathLabel.Content = String.Format(entry.Fullpath + "*.*");
+                    LeftPathLabel.Content = String.Format(entry.Fullpath + "*.*");
 
                 }
             }
@@ -219,6 +223,13 @@ namespace TPALCommander
             catch (System.IO.IOException exception)
             {
                 MessageBox.Show(exception.Message, exception.Source, MessageBoxButton.OK, MessageBoxImage.Error);
+                doWork(new DirectoryEntry()
+                {
+                    Fullpath = "C:\\",
+                    Type = EntryType.Dir
+                });
+                RightComboBox.SelectedIndex = 0;
+
             }
 
             if (entry.Type == EntryType.File)
@@ -237,15 +248,106 @@ namespace TPALCommander
         private void rightComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ComboBox cb = sender as ComboBox;
-            String path = (String) cb.SelectedItem;
-            if(path != String.Empty)
+            String path = (String)cb.SelectedItem;
+            if (path != String.Empty)
             {
                 doWork(new DirectoryEntry()
                 {
                     Fullpath = path,
                     Type = EntryType.Dir
-                }); 
+                });
             }
         }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            bool setPolishCulture = (sender == PolishMenuItem);
+
+            CultureResources.ChangeCulture(new CultureInfo(setPolishCulture ? "pl" : "en"));
+            PolishMenuItem.IsChecked = setPolishCulture;
+            EnglishMenuItem.IsChecked = !setPolishCulture;
+        }
+    }
+
+    // Create a class that implements ICommand and accepts a delegate.
+    public class SimpleDelegateCommand : ICommand
+    {
+        // Specify the keys and mouse actions that invoke the command. 
+        public Key GestureKey { get; set; }
+        public ModifierKeys GestureModifier { get; set; }
+        public MouseAction MouseGesture { get; set; }
+
+        Action<object> _executeDelegate;
+
+        public SimpleDelegateCommand(Action<object> executeDelegate)
+        {
+            _executeDelegate = executeDelegate;
+        }
+
+        public void Execute(object parameter)
+        {
+            _executeDelegate(parameter);
+        }
+
+        public bool CanExecute(object parameter) { return true; }
+        public event EventHandler CanExecuteChanged;
+
+        public SimpleDelegateCommand ChangeColorCommand
+        {
+            get { return changeColorCommand; }
+        }
+
+        private SimpleDelegateCommand changeColorCommand;
+    }
+
+    //private void InitializeCommand()
+    //{
+    //    originalColor = this.Background;
+
+    //    changeColorCommand = new SimpleDelegateCommand(x => this.ChangeColor(x));
+
+    //    DataContext = this;
+    //    changeColorCommand.GestureKey = Key.C;
+    //    changeColorCommand.GestureModifier = ModifierKeys.Control;
+    //    ChangeColorCommand.MouseGesture = MouseAction.RightClick;
+    //}
+
+    //private Brush originalColor, alternateColor;
+
+    //// Switch the Background color between
+    //// the original and selected color.
+    //private void ChangeColor(object colorString)
+    //{
+    //    if (colorString == null)
+    //    {
+    //        return;
+    //    }
+
+    //    Color newColor =
+    //        (Color)ColorConverter.ConvertFromString((String)colorString);
+
+    //    alternateColor = new SolidColorBrush(newColor);
+
+    //    if (this.Background == originalColor)
+    //    {
+    //        this.Background = alternateColor;
+    //    }
+    //    else
+    //    {
+    //        this.Background = originalColor;
+    //    }
+    //}
+
+    public class AddToInputBinding
+    {
+        public InputBinding Binding { get; set; }
+        public static readonly DependencyProperty BindingProperty = DependencyProperty.RegisterAttached(
+          "Binding", typeof(InputBinding), typeof(AddToInputBinding), new PropertyMetadata
+          {
+              PropertyChangedCallback = (obj, e) =>
+              {
+                  ((UIElement)obj).InputBindings.Add((InputBinding)e.NewValue);
+              }
+          });
     }
 }

@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:TPALCommander"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <ResourceDictionary Source="Dictionary1.xaml"/>
     </Application.Resources>
 </Application>

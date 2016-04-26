@@ -12,3 +12,9 @@ c:\users\pyra\documents\visual studio 2015\Projects\TPALCommander\TPALCommander\
 c:\users\pyra\documents\visual studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\TPALCommander.csproj.GenerateResource.Cache
 c:\users\pyra\documents\visual studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\TPALCommander.exe
 c:\users\pyra\documents\visual studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\TPALCommander.pdb
+C:\Users\Pyra\Documents\Visual Studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\GeneratedInternalTypeHelper.g.cs
+C:\Users\Pyra\Documents\Visual Studio 2015\Projects\TPALCommander\TPALCommander\bin\Debug\pl\TPALCommander.resources.dll
+C:\Users\Pyra\Documents\Visual Studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\App.baml
+C:\Users\Pyra\Documents\Visual Studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\Dictionary1.baml
+C:\Users\Pyra\Documents\Visual Studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\TPALCommander.Properties.Resources.pl.resources
+C:\Users\Pyra\Documents\Visual Studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\pl\TPALCommander.resources.dll

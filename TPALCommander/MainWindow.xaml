@@ -5,11 +5,26 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TPALCommander"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525" Loaded="Window_Loaded">
-    <DockPanel>
+        Title="{Binding Path=MainWindowTitle, Source={StaticResource Resources}}" Height="480" Width="640" Loaded="Window_Loaded">
+    <DockPanel LastChildFill="True">
         <Menu DockPanel.Dock="Top">
-            <MenuItem Header="File"></MenuItem>
+            <MenuItem Header="{Binding Path=FileMenuItem, Source={StaticResource Resources}}">
+                    <MenuItem Header="{Binding Path=LanuageHeader, Source={StaticResource Resources}}">
+                        <MenuItem Name="EnglishMenuItem" Header="{Binding Path=EnglishMenuItem, Source={StaticResource Resources}}" IsCheckable="True" IsChecked="True" Click="MenuItem_Click"></MenuItem>
+                        <MenuItem Name="PolishMenuItem"  Header="{Binding Path=PolishMenuItem, Source={StaticResource Resources}}" IsCheckable="True" Click="MenuItem_Click"></MenuItem>
+                    </MenuItem>
+                </MenuItem>
         </Menu>
+        
+        <StatusBar DockPanel.Dock="Bottom" Height="24" Width="Auto" VerticalAlignment="Bottom"
+                   ToolTip="{Binding Path=StatusBarToolTip, Source={StaticResource Resources}}">
+            <StatusBarItem>
+                <TextBlock x:Name="StatusBarLabel" Text="Text" HorizontalAlignment="Left"/>
+            </StatusBarItem>
+            <StatusBarItem>
+                <ProgressBar Height="18" Width="200" HorizontalAlignment="Right" ClipToBounds="True"/>
+            </StatusBarItem>
+        </StatusBar>
         <Menu DockPanel.Dock="Top" Height="24">
             <MenuItem Width="24">
                 <MenuItem.Icon>
@@ -19,17 +34,17 @@
             </MenuItem>
         </Menu>
         <Grid Background="AliceBlue" x:Name="MainGrid" >
-            <Grid.InputBindings>
+            <!--<Grid.InputBindings>
                 <KeyBinding Key="C" Modifiers="Ctrl" Command="ApplicationCommands.Open"/>
-            </Grid.InputBindings>
-            
+            </Grid.InputBindings>-->
+
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="24"/>
-                <RowDefinition Height="16"></RowDefinition>
+                <RowDefinition Height="16"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid Grid.Column="0" x:Name="LeftGrid"/>
@@ -56,27 +71,37 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Name" 
+                        <GridViewColumn Header="{Binding Path=ListHeaderName, Source={StaticResource Resources}}" 
                                         DisplayMemberBinding="{Binding Name}"
-                                        Width="100" />
-                        <GridViewColumn Header="Extention" 
+                                        Width="200" />
+                        <GridViewColumn Header="{Binding Path=ListHeaderExtension, Source={StaticResource Resources}}" 
                                         DisplayMemberBinding="{Binding Extension}"
                                         Width="60"/>
-                        <GridViewColumn Header="Size" 
+                        <GridViewColumn Header="{Binding Path=ListHeaderSize, Source={StaticResource Resources}}" 
                                         DisplayMemberBinding="{Binding Size}"
                                         Width="100"/>
                     </GridView>
                 </ListView.View>
             </ListView>
             <ListView Grid.Column="1" Grid.Row="2" HorizontalAlignment="Stretch" 
-                      Margin="2,0,1,1" Name="RightView" ItemsSource="{Binding}" SizeChanged="List_SizeChanged">
+                      Margin="2,0,1,1" x:Name="RightView" ItemsSource="{Binding}" SizeChanged="List_SizeChanged">
                 <!-- <ScrollViewer HorizontalScrollBarVisibility="Disabled"></ScrollViewer> -->
+                <!--<ListView.InputBindings>
+                    <KeyBinding Key="C"
+                                Modifiers="Control">
+                    </KeyBinding>
+                </ListView.InputBindings>-->
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <EventSetter Event="MouseDoubleClick" Handler="listViewItem_MouseDoubleClick"/>
-
+                        <Setter Property="local:AddToInputBinding.Binding">
+                            <Setter.Value>
+                                <KeyBinding Key="C"
+                                            Modifiers="Control" 
+                                            Command="{Binding copy_handler}"></KeyBinding>
+                            </Setter.Value>
+                        </Setter>
                     </Style>
-
                 </ListView.ItemContainerStyle>
                 <ListView.Resources>
                     <Style TargetType="{x:Type GridViewColumnHeader}">
@@ -92,25 +117,28 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Name" 
+                        <GridViewColumn Header="{Binding Path=ListHeaderName, Source={StaticResource Resources}}" 
                                         DisplayMemberBinding="{Binding Name}"
-                                        Width="100" 
+                                        Width="200" 
                                         />
-                        <GridViewColumn Header="Extention" 
+                        <GridViewColumn Header="{Binding Path=ListHeaderExtension, Source={StaticResource Resources}}" 
                                         DisplayMemberBinding="{Binding Extension}"
                                         Width="60" />
-                        <GridViewColumn Header="Size" 
+                        <GridViewColumn Header="{Binding Path=ListHeaderSize, Source={StaticResource Resources}}" 
                                         DisplayMemberBinding="{Binding Size}"
-                                        Width="2000"/>
+                                        Width="100"/>
                     </GridView>
                 </ListView.View>
             </ListView>
-            <ComboBox x:Name="leftComboBox" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Height="20" Margin="10,2,0,0" />
-            <ComboBox x:Name="rightComboBox" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Height="20" Margin="10,2,0,0" SelectionChanged="rightComboBox_SelectionChanged"/>
-            <Label x:Name="leftPathLabel" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Height="16" Padding="0" ScrollViewer.CanContentScroll="True" RenderTransformOrigin="0.5,0.516" Margin="10,0,0,0">Smt</Label>
-            <Label x:Name="rightPathLabel" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Height="16" Padding="0" ScrollViewer.CanContentScroll="True" RenderTransformOrigin="0.5,0.516" Margin="10,0,0,0">Smt</Label>
+            <ComboBox x:Name="LeftComboBox" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Height="20" Margin="10,2,0,0" SelectionChanged="rightComboBox_SelectionChanged" />
+            <ComboBox x:Name="RightComboBox" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Height="20" Margin="10,2,0,0" SelectionChanged="rightComboBox_SelectionChanged"/>
+            <Label x:Name="LeftPathLabel" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Height="16" Padding="0" ScrollViewer.CanContentScroll="True" RenderTransformOrigin="0.5,0.516" Margin="10,0,0,0">Smt</Label>
+            <Label x:Name="RightPathLabel" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Height="16" Padding="0" ScrollViewer.CanContentScroll="True" RenderTransformOrigin="0.5,0.516" Margin="10,0,0,0">Smt</Label>
+
         </Grid>
+
     </DockPanel>
+
 </Window>
 
         

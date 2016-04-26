@@ -118,27 +118,27 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="EnglishMenuItem" xml:space="preserve">
-    <value>English</value>
+    <value>Angielski</value>
   </data>
   <data name="FileMenuItem" xml:space="preserve">
-    <value>File</value>
+    <value>Plik</value>
   </data>
   <data name="LanuageHeader" xml:space="preserve">
-    <value>Language</value>
+    <value>Język</value>
   </data>
   <data name="ListHeaderExtension" xml:space="preserve">
-    <value>Extension</value>
+    <value>Rozszerzenie</value>
   </data>
   <data name="ListHeaderName" xml:space="preserve">
-    <value>Name</value>
+    <value>Nazwa</value>
   </data>
   <data name="ListHeaderSize" xml:space="preserve">
-    <value>Size</value>
+    <value>Rozmiar</value>
   </data>
   <data name="MainWindowTitle" xml:space="preserve">
-    <value>TPALCommander [en]</value>
+    <value>TPALCommander [pl]</value>
   </data>
   <data name="PolishMenuItem" xml:space="preserve">
-    <value>Polish</value>
+    <value>Polski</value>
   </data>
 </root>
