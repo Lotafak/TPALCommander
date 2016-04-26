@@ -59,6 +59,11 @@
             <ListView Grid.Column="0" Grid.Row="2"  HorizontalAlignment="Stretch" 
                       Margin="1,0,2,1" Name="LeftView" 
                       SizeChanged="List_SizeChanged" ItemsSource="{Binding}">
+                <ListView.CommandBindings>
+                    <CommandBinding Command="Copy" Executed="CopyCommandBinding"/>
+                    <CommandBinding Command="Paste" Executed="PasteCommandBinding"/>
+                    <CommandBinding Command="Cut" Executed="CutCommandBinding"/>
+                </ListView.CommandBindings>
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <EventSetter Event="MouseDoubleClick" Handler="listViewItem_MouseDoubleClick"/>
@@ -98,16 +103,22 @@
                                 Modifiers="Control">
                     </KeyBinding>
                 </ListView.InputBindings>-->
+                <ListView.CommandBindings>
+                    <CommandBinding Command="Copy" Executed="CopyCommandBinding"/>
+                    <CommandBinding Command="Paste" Executed="PasteCommandBinding"/>
+                    <CommandBinding Command="Cut" Executed="CutCommandBinding"/>
+                </ListView.CommandBindings>
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <EventSetter Event="MouseDoubleClick" Handler="listViewItem_MouseDoubleClick"/>
-                        <Setter Property="local:AddToInputBinding.Binding">
+                        <!--<Setter Property="local:AddToInputBinding.Binding">
                             <Setter.Value>
                                 <KeyBinding Key="C"
                                             Modifiers="Control" 
                                             Command="{Binding copy_handler}"></KeyBinding>
                             </Setter.Value>
-                        </Setter>
+                        </Setter>-->
+                        
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListView.Resources>
@@ -126,14 +137,14 @@
                         </GridViewColumn>
                         <GridViewColumn Header="{Binding Path=ListHeaderName, Source={StaticResource Resources}}" 
                                         DisplayMemberBinding="{Binding Name}"
-                                        Width="200" 
+                                        Width="100" 
                                         />
                         <GridViewColumn Header="{Binding Path=ListHeaderExtension, Source={StaticResource Resources}}" 
                                         DisplayMemberBinding="{Binding Extension}"
                                         Width="60" />
                         <GridViewColumn Header="{Binding Path=ListHeaderSize, Source={StaticResource Resources}}" 
                                         DisplayMemberBinding="{Binding Size}"
-                                        Width="100"/>
+                                        Width="Auto"/>
                     </GridView>
                 </ListView.View>
             </ListView>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
@@ -42,11 +43,13 @@ namespace TPALCommander
     partial class MainWindow : Window
     {
 
-        ObservableCollection<DirectoryEntry> leftEntries = new ObservableCollection<DirectoryEntry>();
-        ObservableCollection<DirectoryEntry> rightEntries = new ObservableCollection<DirectoryEntry>();
-        ObservableCollection<DirectoryEntry> subEntries = new ObservableCollection<DirectoryEntry>();
-        DirectoryEntry leftPreviousEntry = null;
-        DirectoryEntry rightPreviousEntry = null;
+        private ObservableCollection<DirectoryEntry> leftEntries = new ObservableCollection<DirectoryEntry>();
+        private ObservableCollection<DirectoryEntry> rightEntries = new ObservableCollection<DirectoryEntry>();
+        private ObservableCollection<DirectoryEntry> subEntries = new ObservableCollection<DirectoryEntry>();
+        private List<DirectoryEntry> listToCopy = new List<DirectoryEntry>();
+        private List<DirectoryEntry> listToCut = new List<DirectoryEntry>();
+        private DirectoryEntry leftPreviousEntry = null;
+        private DirectoryEntry rightPreviousEntry = null;
         private int ListHeaderSize = 50;
         public MainWindow()
         {
@@ -59,7 +62,7 @@ namespace TPALCommander
             //LeftView.ItemsSource = Collection;
             LeftView.SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Disabled);
             RightView.SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Disabled);
-            RightView.SetValue(ListViewItem.NameProperty, "RightItemView");
+            //RightView.SetValue(ListViewItem.NameProperty, "RightItemView");
             AddHotKeys();
         }
 
@@ -116,6 +119,7 @@ namespace TPALCommander
 
             gView.Columns[1].Width = (workingWidth - (gView.Columns[2].ActualWidth + gView.Columns[0].ActualWidth + gView.Columns[3].ActualWidth + 10)) > ListHeaderSize
                 ? workingWidth - (gView.Columns[2].ActualWidth + gView.Columns[0].ActualWidth + gView.Columns[3].ActualWidth) : ListHeaderSize;
+            //gView.Columns[1].Width
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -206,7 +210,7 @@ namespace TPALCommander
             }
         }
 
-        public void FillContainer(ObservableCollection<DirectoryEntry> collection , DirectoryEntry entry)
+        public void FillContainer(ObservableCollection<DirectoryEntry> collection, DirectoryEntry entry)
         {
             collection.Clear();
             if (entry.Fullpath.Length > 3)
@@ -222,9 +226,9 @@ namespace TPALCommander
                 });
             }
 
-
-            foreach (string s in Directory.GetDirectories(entry.Fullpath))
+            foreach (string s in Directory.EnumerateDirectories(entry.Fullpath))
             {
+                //Directory.GetAccessControl(s);
                 DirectoryInfo dir = new DirectoryInfo(s);
                 DirectoryEntry d = new DirectoryEntry()
                 {
@@ -240,19 +244,23 @@ namespace TPALCommander
             foreach (string f in Directory.GetFiles(entry.Fullpath))
             {
                 FileInfo file = new FileInfo(f);
+                NumberFormatInfo nfi = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
+                nfi.NumberGroupSeparator = " ";
+                nfi.NumberDecimalDigits = 0;
                 DirectoryEntry d = new DirectoryEntry()
                 {
                     Date = Directory.GetLastWriteTime(f),
                     Name = file.Name,
                     Type = EntryType.File,
                     /*Imagepath = System.Drawing.Icon.ExtractAssociatedIcon(file.FullName),*/
+                    Size = file.Length.ToString("n", nfi),
                     Fullpath = file.FullName
                 };
                 if (file.Extension.Length > 1)
                     d.Extension = file.Extension.Substring(1);
                 collection.Add(d);
             }
-            
+
             //if(sender)
             if (!entry.View)
             {
@@ -298,38 +306,85 @@ namespace TPALCommander
             PolishMenuItem.IsChecked = setPolishCulture;
             EnglishMenuItem.IsChecked = !setPolishCulture;
         }
+
+        private void CopyCommandBinding(object sender, ExecutedRoutedEventArgs e)
+        {
+            ListView lv = sender as ListView;
+            listToCopy.Clear();
+            foreach (DirectoryEntry item in lv.SelectedItems)
+            {
+                listToCopy.Add(item);
+                MessageBox.Show(item.Fullpath);
+            }
+        }
+
+
+        private void CutCommandBinding(object sender, ExecutedRoutedEventArgs e)
+        {
+            ListView lv = sender as ListView;
+            listToCopy.Clear();
+            listToCut.Clear();
+            foreach (DirectoryEntry item in lv.SelectedItems)
+            {
+                listToCopy.Add(item);
+                MessageBox.Show(item.Fullpath);
+            }
+        }
+
+        private void PasteCommandBinding(object sender, ExecutedRoutedEventArgs e)
+        {
+            ListView lv = sender as ListView;
+            DirectoryEntry destinationPath = new DirectoryEntry();
+            if (listToCopy != null)
+            {
+                switch (lv.Name)
+                {
+                    case "LeftView":
+                        destinationPath = leftPreviousEntry;
+                        break;
+                    case "RightView":
+                        destinationPath = rightPreviousEntry;
+                        break;
+                }
+                foreach (DirectoryEntry item in listToCopy)
+                {
+                    File.Copy(item.Fullpath, Path.Combine(destinationPath.Fullpath, item.Name));
+                }
+            }
+            doWork(destinationPath);
+        }
     }
 
     // Create a class that implements ICommand and accepts a delegate.
-    public class SimpleDelegateCommand : ICommand
-    {
-        // Specify the keys and mouse actions that invoke the command. 
-        public Key GestureKey { get; set; }
-        public ModifierKeys GestureModifier { get; set; }
-        public MouseAction MouseGesture { get; set; }
+    //public class SimpleDelegateCommand : ICommand
+    //{
+    //    // Specify the keys and mouse actions that invoke the command. 
+    //    public Key GestureKey { get; set; }
+    //    public ModifierKeys GestureModifier { get; set; }
+    //    public MouseAction MouseGesture { get; set; }
 
-        Action<object> _executeDelegate;
+    //    Action<object> _executeDelegate;
 
-        public SimpleDelegateCommand(Action<object> executeDelegate)
-        {
-            _executeDelegate = executeDelegate;
-        }
+    //    public SimpleDelegateCommand(Action<object> executeDelegate)
+    //    {
+    //        _executeDelegate = executeDelegate;
+    //    }
 
-        public void Execute(object parameter)
-        {
-            _executeDelegate(parameter);
-        }
+    //    public void Execute(object parameter)
+    //    {
+    //        _executeDelegate(parameter);
+    //    }
 
-        public bool CanExecute(object parameter) { return true; }
-        public event EventHandler CanExecuteChanged;
+    //    public bool CanExecute(object parameter) { return true; }
+    //    public event EventHandler CanExecuteChanged;
 
-        public SimpleDelegateCommand ChangeColorCommand
-        {
-            get { return changeColorCommand; }
-        }
+    //    public SimpleDelegateCommand ChangeColorCommand
+    //    {
+    //        get { return changeColorCommand; }
+    //    }
 
-        private SimpleDelegateCommand changeColorCommand;
-    }
+    //    private SimpleDelegateCommand changeColorCommand;
+    //}
 
     //private void InitializeCommand()
     //{
@@ -369,16 +424,16 @@ namespace TPALCommander
     //    }
     //}
 
-    public class AddToInputBinding
-    {
-        public InputBinding Binding { get; set; }
-        public static readonly DependencyProperty BindingProperty = DependencyProperty.RegisterAttached(
-          "Binding", typeof(InputBinding), typeof(AddToInputBinding), new PropertyMetadata
-          {
-              PropertyChangedCallback = (obj, e) =>
-              {
-                  ((UIElement)obj).InputBindings.Add((InputBinding)e.NewValue);
-              }
-          });
-    }
+    //public class AddToInputBinding
+    //{
+    //    public InputBinding Binding { get; set; }
+    //    public static readonly DependencyProperty BindingProperty = DependencyProperty.RegisterAttached(
+    //      "Binding", typeof(InputBinding), typeof(AddToInputBinding), new PropertyMetadata
+    //      {
+    //          PropertyChangedCallback = (obj, e) =>
+    //          {
+    //              ((UIElement)obj).InputBindings.Add((InputBinding)e.NewValue);
+    //          }
+    //      });
+    //}
 }
