@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 using System.Windows.Input;
 using ComboBox = System.Windows.Controls.ComboBox;
 using ListView = System.Windows.Controls.ListView;
@@ -57,6 +60,8 @@ namespace TPALCommander
         private DirectoryEntry leftPreviousEntry = null;
         private DirectoryEntry rightPreviousEntry = null;
         private int ListHeaderSize = 50;
+
+        private BackgroundWorker bw;
         public MainWindow()
         {
             CultureResources.ChangeCulture(Properties.Settings.Default.DefaultCulture);
@@ -69,25 +74,28 @@ namespace TPALCommander
             LeftView.SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Disabled);
             RightView.SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Disabled);
             //RightView.SetValue(ListViewItem.NameProperty, "RightItemView");
-            AddHotKeys();
+
+            bw = new BackgroundWorker();
+            bw.WorkerReportsProgress = true;
+            bw.WorkerSupportsCancellation = true;
+            bw.DoWork += backgroundWorker_DoWork;
+            bw.ProgressChanged += backgroundWorker_ProgressChanged;
+            bw.RunWorkerCompleted += backgroundWorker_RunWorkerCompleted;
         }
 
-        private void AddHotKeys()
+        private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            try
-            {
-                //RoutedCommand firstSettings = new RoutedCommand();
-                //firstSettings.InputGestures.Add(new KeyGesture(Key.C, ModifierKeys.Control));
-                //CommandBindings.Add(new CommandBinding(firstSettings, copy_handler));
+            throw new NotImplementedException();
+        }
 
-                //RoutedCommand secondSettings = new RoutedCommand();
-                //secondSettings.InputGestures.Add(new KeyGesture(Key.V, ModifierKeys.Control));
-                //CommandBindings.Add(new CommandBinding(secondSettings, My_second_event_handler));
-            }
-            catch (Exception exception)
-            {
-                //handle exception error
-            }
+        private void backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         private void copy_handler(object sender, ExecutedRoutedEventArgs e)
@@ -125,7 +133,6 @@ namespace TPALCommander
 
             gView.Columns[1].Width = (workingWidth - (gView.Columns[2].ActualWidth + gView.Columns[0].ActualWidth + gView.Columns[3].ActualWidth + 10)) > ListHeaderSize
                 ? workingWidth - (gView.Columns[2].ActualWidth + gView.Columns[0].ActualWidth + gView.Columns[3].ActualWidth) : ListHeaderSize;
-            //gView.Columns[1].Width
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -320,10 +327,8 @@ namespace TPALCommander
             foreach (DirectoryEntry item in lv.SelectedItems)
             {
                 listToCopy.Add(item);
-                MessageBox.Show(item.Fullpath);
             }
         }
-
 
         private void CutCommandBinding(object sender, ExecutedRoutedEventArgs e)
         {
@@ -341,7 +346,7 @@ namespace TPALCommander
         {
             ListView lv = sender as ListView;
             DirectoryEntry destinationPath = new DirectoryEntry();
-            if (listToCopy != null)
+            if (listToCopy != null && (listToCopy.Count > 0))
             {
                 switch (lv.Name)
                 {
@@ -354,25 +359,104 @@ namespace TPALCommander
                 }
                 try
                 {
-                    foreach (DirectoryEntry item in listToCopy)
+                    new Thread(delegate ()
                     {
-                        File.Copy(item.Fullpath, Path.Combine(destinationPath.Fullpath, item.Name));
-                    }
+                        long copyingSize = 0;
+                        long copiedSize = 0;
+
+                        //Dispatcher.Invoke(new Action(delegate
+                        //{
+                        //    StatusBar.Visibility = Visibility.Visible;
+                        //    StatusBarLabel.Text = "Gathering Information ...";
+                        //    foreach (DirectoryEntry item in listToCopy)
+                        //    {
+                        //        FileInfo fi = new FileInfo(item.Fullpath);
+                        //        copyingSize += fi.Length;
+                        //    }
+                        //}));
+
+                        foreach (DirectoryEntry item in listToCopy)
+                        {
+                            if (item.Type == EntryType.Dir)
+                                CopyFolder(item.Fullpath, destinationPath.Fullpath + "\\" + item.Name);
+                            else
+                            {
+                                FileInfo fi = new FileInfo(item.Fullpath);
+                                copiedSize += fi.Length;
+
+                                //Dispatcher.Invoke(new Action(delegate
+                                //{
+                                //    StatusBar.Visibility = Visibility.Visible;
+                                //    StatusBarLabel.Text = "Copying ...";
+                                //    ProgressBar.Maximum = copyingSize;
+                                //    ProgressBar.Minimum = 0;
+                                //    ProgressBar.Value = copiedSize;
+                                //}));
+                                //File.Copy(item.Fullpath, Path.Combine(destinationPath.Fullpath, item.Name));
+                                fi.CopyTo(destinationPath.Fullpath);
+                            }
+                        }
+
+                        Dispatcher.Invoke(new Action(delegate
+                        {
+                            MessageBox.Show("Copying ended");
+                            StatusBar.Visibility = Visibility.Hidden;
+                            ProgressBar.Value = 0;
+                            listToCopy.Clear();
+                            doWork(destinationPath);
+                        }));
+                    }).Start();
                 }
                 catch (System.UnauthorizedAccessException ex)
                 {
                     MessageBox.Show(ex.Message, ex.Source);
                 }
-                listToCopy.Clear();
+                catch (System.IO.IOException ex)
+                {
+                    MessageBox.Show("yhm");
+                }
             }
-            doWork(destinationPath);
         }
+
+        public void CopyFolder(String sourcePath, String destinationPath)
+        {
+            DirectoryInfo dir = new DirectoryInfo(sourcePath);
+
+            if (!dir.Exists)
+            {
+                throw new DirectoryNotFoundException(
+                    "Source directory does not exist or could not be found: "
+                    + sourcePath);
+            }
+
+            DirectoryInfo[] dirs = dir.GetDirectories();
+            // If the destination directory doesn't exist, create it.
+            if (!Directory.Exists(destinationPath))
+            {
+                Directory.CreateDirectory(destinationPath);
+            }
+
+            // Get the files in the directory and copy them to the new location.
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                string temppath = Path.Combine(destinationPath, file.Name);
+                file.CopyTo(temppath, false);
+            }
+
+            foreach (DirectoryInfo subdir in dirs)
+            {
+                string temppath = Path.Combine(destinationPath, subdir.Name);
+                CopyFolder(subdir.FullName, temppath);
+            }
+        }
+
         private void DeleteCommandBinding(object sender, ExecutedRoutedEventArgs e)
         {
             ListView lv = sender as ListView;
             if (lv.SelectedItems.Count > 1)
             {
-                
+
                 StringBuilder sb = new StringBuilder();
                 sb.Append("\n");
                 foreach (DirectoryEntry directoryEntry in lv.SelectedItems)
@@ -389,7 +473,7 @@ namespace TPALCommander
                     }
                 }
             }
-            else if(lv.SelectedItem != null)
+            else if (lv.SelectedItem != null)
             {
                 DirectoryEntry file = (DirectoryEntry)lv.SelectedItem;
                 MessageBoxResult messageBoxResult = MessageBox.Show(Properties.Resources.DeleteFileWarning + file.Name + " ?", "TPALCommander", MessageBoxButton.OKCancel);
@@ -411,96 +495,6 @@ namespace TPALCommander
                     break;
             }
             doWork(de);
-
-
-            //foreach (DirectoryEntry item in lv.SelectedItems)
-            //{
-
-            //    File.Delete();
-            //    MessageBox.Show(item.Fullpath);
-            //}
         }
     }
 }
-
-// Create a class that implements ICommand and accepts a delegate.
-//public class SimpleDelegateCommand : ICommand
-//{
-//    // Specify the keys and mouse actions that invoke the command. 
-//    public Key GestureKey { get; set; }
-//    public ModifierKeys GestureModifier { get; set; }
-//    public MouseAction MouseGesture { get; set; }
-
-//    Action<object> _executeDelegate;
-
-//    public SimpleDelegateCommand(Action<object> executeDelegate)
-//    {
-//        _executeDelegate = executeDelegate;
-//    }
-
-//    public void Execute(object parameter)
-//    {
-//        _executeDelegate(parameter);
-//    }
-
-//    public bool CanExecute(object parameter) { return true; }
-//    public event EventHandler CanExecuteChanged;
-
-//    public SimpleDelegateCommand ChangeColorCommand
-//    {
-//        get { return changeColorCommand; }
-//    }
-
-//    private SimpleDelegateCommand changeColorCommand;
-//}
-
-//private void InitializeCommand()
-//{
-//    originalColor = this.Background;
-
-//    changeColorCommand = new SimpleDelegateCommand(x => this.ChangeColor(x));
-
-//    DataContext = this;
-//    changeColorCommand.GestureKey = Key.C;
-//    changeColorCommand.GestureModifier = ModifierKeys.Control;
-//    ChangeColorCommand.MouseGesture = MouseAction.RightClick;
-//}
-
-//private Brush originalColor, alternateColor;
-
-//// Switch the Background color between
-//// the original and selected color.
-//private void ChangeColor(object colorString)
-//{
-//    if (colorString == null)
-//    {
-//        return;
-//    }
-
-//    Color newColor =
-//        (Color)ColorConverter.ConvertFromString((String)colorString);
-
-//    alternateColor = new SolidColorBrush(newColor);
-
-//    if (this.Background == originalColor)
-//    {
-//        this.Background = alternateColor;
-//    }
-//    else
-//    {
-//        this.Background = originalColor;
-//    }
-//}
-
-//public class AddToInputBinding
-//{
-//    public InputBinding Binding { get; set; }
-//    public static readonly DependencyProperty BindingProperty = DependencyProperty.RegisterAttached(
-//      "Binding", typeof(InputBinding), typeof(AddToInputBinding), new PropertyMetadata
-//      {
-//          PropertyChangedCallback = (obj, e) =>
-//          {
-//              ((UIElement)obj).InputBindings.Add((InputBinding)e.NewValue);
-//          }
-//      });
-//}

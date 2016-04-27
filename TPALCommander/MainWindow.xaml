@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TPALCommander"
         mc:Ignorable="d"
-        Title="{Binding Path=MainWindowTitle, Source={StaticResource Resources}}" Height="480" Width="640" Loaded="Window_Loaded">
+        Title="{Binding Path=MainWindowTitle, Source={StaticResource Resources}}" Height="600" Width="800" Loaded="Window_Loaded">
     <DockPanel LastChildFill="True">
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="{Binding Path=FileMenuItem, Source={StaticResource Resources}}">
@@ -139,5 +139,6 @@
             <Label x:Name="LeftPathLabel" Grid.Column="0" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center" Height="16" Padding="0" ScrollViewer.CanContentScroll="True" RenderTransformOrigin="0.5,0.516" Margin="10,0,0,0">Smt</Label>
             <Label x:Name="RightPathLabel" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center" Height="16" Padding="0" ScrollViewer.CanContentScroll="True" RenderTransformOrigin="0.5,0.516" Margin="10,0,0,0">Smt</Label>
         </Grid>
+        <Border BorderBrush="Black" BorderThickness="1" Height="527" VerticalAlignment="Top" Width="100"/>
     </DockPanel>
 </Window>
