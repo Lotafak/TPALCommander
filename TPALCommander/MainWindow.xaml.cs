@@ -3,9 +3,15 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Input;
+using ComboBox = System.Windows.Controls.ComboBox;
+using ListView = System.Windows.Controls.ListView;
+using ListViewItem = System.Windows.Controls.ListViewItem;
+using MessageBox = System.Windows.MessageBox;
 
 public enum EntryType
 {
@@ -346,94 +352,155 @@ namespace TPALCommander
                         destinationPath = rightPreviousEntry;
                         break;
                 }
-                foreach (DirectoryEntry item in listToCopy)
+                try
                 {
-                    File.Copy(item.Fullpath, Path.Combine(destinationPath.Fullpath, item.Name));
+                    foreach (DirectoryEntry item in listToCopy)
+                    {
+                        File.Copy(item.Fullpath, Path.Combine(destinationPath.Fullpath, item.Name));
+                    }
                 }
+                catch (System.UnauthorizedAccessException ex)
+                {
+                    MessageBox.Show(ex.Message, ex.Source);
+                }
+                listToCopy.Clear();
             }
             doWork(destinationPath);
         }
+        private void DeleteCommandBinding(object sender, ExecutedRoutedEventArgs e)
+        {
+            ListView lv = sender as ListView;
+            if (lv.SelectedItems.Count > 1)
+            {
+                
+                StringBuilder sb = new StringBuilder();
+                sb.Append("\n");
+                foreach (DirectoryEntry directoryEntry in lv.SelectedItems)
+                {
+                    sb.Append("\n").Append(directoryEntry.Name);
+                }
+
+                var messageBoxResult = MessageBox.Show(Properties.Resources.DeleteFilesWarning + sb, "TPALCommander", MessageBoxButton.OKCancel);
+                if (messageBoxResult == MessageBoxResult.OK)
+                {
+                    foreach (DirectoryEntry directoryEntry in lv.SelectedItems)
+                    {
+                        File.Delete(directoryEntry.Fullpath);
+                    }
+                }
+            }
+            else if(lv.SelectedItem != null)
+            {
+                DirectoryEntry file = (DirectoryEntry)lv.SelectedItem;
+                MessageBoxResult messageBoxResult = MessageBox.Show(Properties.Resources.DeleteFileWarning + file.Name + " ?", "TPALCommander", MessageBoxButton.OKCancel);
+                if (messageBoxResult == MessageBoxResult.OK)
+                    File.Delete(file.Fullpath);
+            }
+            DirectoryEntry de = new DirectoryEntry()
+            {
+                Type = EntryType.Dir,
+                Imagepath = "Assets/Folder-icon.png"
+            };
+            switch (lv.Name)
+            {
+                case "LeftView":
+                    de = leftPreviousEntry;
+                    break;
+                case "RightView":
+                    de = rightPreviousEntry;
+                    break;
+            }
+            doWork(de);
+
+
+            //foreach (DirectoryEntry item in lv.SelectedItems)
+            //{
+
+            //    File.Delete();
+            //    MessageBox.Show(item.Fullpath);
+            //}
+        }
     }
-
-    // Create a class that implements ICommand and accepts a delegate.
-    //public class SimpleDelegateCommand : ICommand
-    //{
-    //    // Specify the keys and mouse actions that invoke the command. 
-    //    public Key GestureKey { get; set; }
-    //    public ModifierKeys GestureModifier { get; set; }
-    //    public MouseAction MouseGesture { get; set; }
-
-    //    Action<object> _executeDelegate;
-
-    //    public SimpleDelegateCommand(Action<object> executeDelegate)
-    //    {
-    //        _executeDelegate = executeDelegate;
-    //    }
-
-    //    public void Execute(object parameter)
-    //    {
-    //        _executeDelegate(parameter);
-    //    }
-
-    //    public bool CanExecute(object parameter) { return true; }
-    //    public event EventHandler CanExecuteChanged;
-
-    //    public SimpleDelegateCommand ChangeColorCommand
-    //    {
-    //        get { return changeColorCommand; }
-    //    }
-
-    //    private SimpleDelegateCommand changeColorCommand;
-    //}
-
-    //private void InitializeCommand()
-    //{
-    //    originalColor = this.Background;
-
-    //    changeColorCommand = new SimpleDelegateCommand(x => this.ChangeColor(x));
-
-    //    DataContext = this;
-    //    changeColorCommand.GestureKey = Key.C;
-    //    changeColorCommand.GestureModifier = ModifierKeys.Control;
-    //    ChangeColorCommand.MouseGesture = MouseAction.RightClick;
-    //}
-
-    //private Brush originalColor, alternateColor;
-
-    //// Switch the Background color between
-    //// the original and selected color.
-    //private void ChangeColor(object colorString)
-    //{
-    //    if (colorString == null)
-    //    {
-    //        return;
-    //    }
-
-    //    Color newColor =
-    //        (Color)ColorConverter.ConvertFromString((String)colorString);
-
-    //    alternateColor = new SolidColorBrush(newColor);
-
-    //    if (this.Background == originalColor)
-    //    {
-    //        this.Background = alternateColor;
-    //    }
-    //    else
-    //    {
-    //        this.Background = originalColor;
-    //    }
-    //}
-
-    //public class AddToInputBinding
-    //{
-    //    public InputBinding Binding { get; set; }
-    //    public static readonly DependencyProperty BindingProperty = DependencyProperty.RegisterAttached(
-    //      "Binding", typeof(InputBinding), typeof(AddToInputBinding), new PropertyMetadata
-    //      {
-    //          PropertyChangedCallback = (obj, e) =>
-    //          {
-    //              ((UIElement)obj).InputBindings.Add((InputBinding)e.NewValue);
-    //          }
-    //      });
-    //}
 }
+
+// Create a class that implements ICommand and accepts a delegate.
+//public class SimpleDelegateCommand : ICommand
+//{
+//    // Specify the keys and mouse actions that invoke the command. 
+//    public Key GestureKey { get; set; }
+//    public ModifierKeys GestureModifier { get; set; }
+//    public MouseAction MouseGesture { get; set; }
+
+//    Action<object> _executeDelegate;
+
+//    public SimpleDelegateCommand(Action<object> executeDelegate)
+//    {
+//        _executeDelegate = executeDelegate;
+//    }
+
+//    public void Execute(object parameter)
+//    {
+//        _executeDelegate(parameter);
+//    }
+
+//    public bool CanExecute(object parameter) { return true; }
+//    public event EventHandler CanExecuteChanged;
+
+//    public SimpleDelegateCommand ChangeColorCommand
+//    {
+//        get { return changeColorCommand; }
+//    }
+
+//    private SimpleDelegateCommand changeColorCommand;
+//}
+
+//private void InitializeCommand()
+//{
+//    originalColor = this.Background;
+
+//    changeColorCommand = new SimpleDelegateCommand(x => this.ChangeColor(x));
+
+//    DataContext = this;
+//    changeColorCommand.GestureKey = Key.C;
+//    changeColorCommand.GestureModifier = ModifierKeys.Control;
+//    ChangeColorCommand.MouseGesture = MouseAction.RightClick;
+//}
+
+//private Brush originalColor, alternateColor;
+
+//// Switch the Background color between
+//// the original and selected color.
+//private void ChangeColor(object colorString)
+//{
+//    if (colorString == null)
+//    {
+//        return;
+//    }
+
+//    Color newColor =
+//        (Color)ColorConverter.ConvertFromString((String)colorString);
+
+//    alternateColor = new SolidColorBrush(newColor);
+
+//    if (this.Background == originalColor)
+//    {
+//        this.Background = alternateColor;
+//    }
+//    else
+//    {
+//        this.Background = originalColor;
+//    }
+//}
+
+//public class AddToInputBinding
+//{
+//    public InputBinding Binding { get; set; }
+//    public static readonly DependencyProperty BindingProperty = DependencyProperty.RegisterAttached(
+//      "Binding", typeof(InputBinding), typeof(AddToInputBinding), new PropertyMetadata
+//      {
+//          PropertyChangedCallback = (obj, e) =>
+//          {
+//              ((UIElement)obj).InputBindings.Add((InputBinding)e.NewValue);
+//          }
+//      });
+//}

@@ -9,7 +9,7 @@
     <DockPanel LastChildFill="True">
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="{Binding Path=FileMenuItem, Source={StaticResource Resources}}">
-                    <MenuItem Header="{Binding Path=LanuageHeader, Source={StaticResource Resources}}">
+                <MenuItem Header="{Binding Path=LanuageHeader, Source={StaticResource Resources}}">
                     <MenuItem Name="EnglishMenuItem" 
                               Header="{Binding Path=EnglishMenuItem, Source={StaticResource Resources}}" 
                                   IsCheckable="True" 
@@ -19,10 +19,9 @@
                               Header="{Binding Path=PolishMenuItem, Source={StaticResource Resources}}" 
                                   IsCheckable="True" 
                                   Click="MenuItem_Click"/>
-                    </MenuItem>
                 </MenuItem>
+            </MenuItem>
         </Menu>
-        
         <StatusBar x:Name="StatusBar"  DockPanel.Dock="Bottom" Height="24" Width="Auto" VerticalAlignment="Bottom"
                    ToolTip="{Binding Path=StatusBarToolTip, Source={StaticResource Resources}}" Visibility="Hidden">
             <StatusBarItem>
@@ -32,37 +31,37 @@
                 <ProgressBar x:Name="ProgressBar" Height="18" Width="200" HorizontalAlignment="Right" ClipToBounds="True"/>
             </StatusBarItem>
         </StatusBar>
-        <Menu DockPanel.Dock="Top" Height="24">
-            <MenuItem Width="24">
-                <MenuItem.Icon>
-                    <Image Source="Assets/icon-refresh-128.png"
-                           RenderOptions.BitmapScalingMode="Fant"/>
-                </MenuItem.Icon>
-            </MenuItem>
-        </Menu>
+        
         <Grid Background="AliceBlue" x:Name="MainGrid" >
-            <!--<Grid.InputBindings>
-                <KeyBinding Key="C" Modifiers="Ctrl" Command="ApplicationCommands.Open"/>
-            </Grid.InputBindings>-->
-
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="24"/>
-                <RowDefinition Height="16"/>
+                <RowDefinition Height="24"/>
+                <RowDefinition Height="24"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
+
+            <Menu DockPanel.Dock="Top" Height="24" Grid.Column="0" Grid.Row="0">
+                <MenuItem Width="24">
+                    <MenuItem.Icon>
+                        <Image Source="Assets/icon-refresh-128.png"
+                           RenderOptions.BitmapScalingMode="Fant"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </Menu>
+
             <Grid Grid.Column="0" x:Name="LeftGrid"/>
-            <!-- <Label Grid.Column="0" Grid.Row="0" Content="asdasdasdasdasd" HorizontalAlignment="Left"/> -->
-            <ListView Grid.Column="0" Grid.Row="2"  HorizontalAlignment="Stretch" 
+            <ListView Grid.Column="0" Grid.Row="3"  HorizontalAlignment="Stretch" 
                       Margin="1,0,2,1" Name="LeftView" 
                       SizeChanged="List_SizeChanged" ItemsSource="{Binding}">
                 <ListView.CommandBindings>
                     <CommandBinding Command="Copy" Executed="CopyCommandBinding"/>
                     <CommandBinding Command="Paste" Executed="PasteCommandBinding"/>
                     <CommandBinding Command="Cut" Executed="CutCommandBinding"/>
+                    <CommandBinding Command="Delete" Executed="DeleteCommandBinding"/>
                 </ListView.CommandBindings>
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
@@ -95,30 +94,17 @@
                     </GridView>
                 </ListView.View>
             </ListView>
-            <ListView Grid.Column="1" Grid.Row="2" HorizontalAlignment="Stretch" 
+            <ListView Grid.Column="1" Grid.Row="3" HorizontalAlignment="Stretch" 
                       Margin="2,0,1,1" x:Name="RightView" ItemsSource="{Binding}" SizeChanged="List_SizeChanged">
-                <!-- <ScrollViewer HorizontalScrollBarVisibility="Disabled"></ScrollViewer> -->
-                <!--<ListView.InputBindings>
-                    <KeyBinding Key="C"
-                                Modifiers="Control">
-                    </KeyBinding>
-                </ListView.InputBindings>-->
                 <ListView.CommandBindings>
                     <CommandBinding Command="Copy" Executed="CopyCommandBinding"/>
                     <CommandBinding Command="Paste" Executed="PasteCommandBinding"/>
                     <CommandBinding Command="Cut" Executed="CutCommandBinding"/>
+                    <CommandBinding Command="Delete" Executed="DeleteCommandBinding"/>
                 </ListView.CommandBindings>
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <EventSetter Event="MouseDoubleClick" Handler="listViewItem_MouseDoubleClick"/>
-                        <!--<Setter Property="local:AddToInputBinding.Binding">
-                            <Setter.Value>
-                                <KeyBinding Key="C"
-                                            Modifiers="Control" 
-                                            Command="{Binding copy_handler}"></KeyBinding>
-                            </Setter.Value>
-                        </Setter>-->
-                        
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListView.Resources>
@@ -148,18 +134,10 @@
                     </GridView>
                 </ListView.View>
             </ListView>
-            <ComboBox x:Name="LeftComboBox" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Height="20" Margin="10,2,0,0" SelectionChanged="rightComboBox_SelectionChanged" />
-            <ComboBox x:Name="RightComboBox" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Height="20" Margin="10,2,0,0" SelectionChanged="rightComboBox_SelectionChanged"/>
-            <Label x:Name="LeftPathLabel" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Height="16" Padding="0" ScrollViewer.CanContentScroll="True" RenderTransformOrigin="0.5,0.516" Margin="10,0,0,0">Smt</Label>
-            <Label x:Name="RightPathLabel" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Height="16" Padding="0" ScrollViewer.CanContentScroll="True" RenderTransformOrigin="0.5,0.516" Margin="10,0,0,0">Smt</Label>
-
+            <ComboBox x:Name="LeftComboBox" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="75" Height="20" Margin="10,0,0,0" SelectionChanged="rightComboBox_SelectionChanged" />
+            <ComboBox x:Name="RightComboBox" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="75" Height="20" Margin="10,0,0,0" SelectionChanged="rightComboBox_SelectionChanged"/>
+            <Label x:Name="LeftPathLabel" Grid.Column="0" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center" Height="16" Padding="0" ScrollViewer.CanContentScroll="True" RenderTransformOrigin="0.5,0.516" Margin="10,0,0,0">Smt</Label>
+            <Label x:Name="RightPathLabel" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center" Height="16" Padding="0" ScrollViewer.CanContentScroll="True" RenderTransformOrigin="0.5,0.516" Margin="10,0,0,0">Smt</Label>
         </Grid>
-
     </DockPanel>
-
 </Window>
-
-        
-
-
-        

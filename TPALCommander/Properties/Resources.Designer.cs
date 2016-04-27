@@ -61,6 +61,24 @@ namespace TPALCommander.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Are you sure to delete following items ?.
+        /// </summary>
+        public static string DeleteFilesWarning {
+            get {
+                return ResourceManager.GetString("DeleteFilesWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Are you sure you want to delete .
+        /// </summary>
+        public static string DeleteFileWarning {
+            get {
+                return ResourceManager.GetString("DeleteFileWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to English.
         /// </summary>
         public static string EnglishMenuItem {
