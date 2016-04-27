@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading;
 using System.Windows;
@@ -11,10 +12,12 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 using System.Windows.Input;
+using System.Windows.Threading;
 using ComboBox = System.Windows.Controls.ComboBox;
 using ListView = System.Windows.Controls.ListView;
 using ListViewItem = System.Windows.Controls.ListViewItem;
 using MessageBox = System.Windows.MessageBox;
+using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 
 public enum EntryType
 {
@@ -61,41 +64,83 @@ namespace TPALCommander
         private DirectoryEntry rightPreviousEntry = null;
         private int ListHeaderSize = 50;
 
-        private BackgroundWorker bw;
+        private BackgroundWorker backgroundWorker1;
+
         public MainWindow()
         {
             CultureResources.ChangeCulture(Properties.Settings.Default.DefaultCulture);
 
             InitializeComponent();
             //UpdateStatusLabel();
-            ObservableCollection<DirectoryEntry> Collection = new ObservableCollection<DirectoryEntry>();
+            //ObservableCollection<DirectoryEntry> Collection = new ObservableCollection<DirectoryEntry>();
             //Collection.Add(new DirectoryEntry() { Name = "Xd", Date = DateTime.Now, Extension = "exe", Fullpath = "C:\\Fraps", Size = "1 000 kB", Type = EntryType.Dir, Imagepath = "Assets/Folder-icon.png" });
             //LeftView.ItemsSource = Collection;
             LeftView.SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Disabled);
             RightView.SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Disabled);
             //RightView.SetValue(ListViewItem.NameProperty, "RightItemView");
 
-            bw = new BackgroundWorker();
-            bw.WorkerReportsProgress = true;
-            bw.WorkerSupportsCancellation = true;
-            bw.DoWork += backgroundWorker_DoWork;
-            bw.ProgressChanged += backgroundWorker_ProgressChanged;
-            bw.RunWorkerCompleted += backgroundWorker_RunWorkerCompleted;
+            backgroundWorker1 = new BackgroundWorker();
+            backgroundWorker1.WorkerReportsProgress = true;
+            backgroundWorker1.WorkerSupportsCancellation = true;
+            backgroundWorker1.DoWork += new DoWorkEventHandler(backgroundWorker1_DoWork);
+            backgroundWorker1.RunWorkerCompleted += new RunWorkerCompletedEventHandler(backgroundWorker1_RunWorkerCompleted);
+            backgroundWorker1.ProgressChanged += new ProgressChangedEventHandler(backgroundWorker1_ProgressChanged);
         }
 
-        private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            throw new NotImplementedException();
+            ProgressBar.Value = e.ProgressPercentage;
         }
 
-        private void backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            throw new NotImplementedException();
+            StatusBar.Visibility = Visibility.Hidden;
+            doWork((DirectoryEntry)e.Result);
         }
 
-        private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
-            throw new NotImplementedException();
+            
+            DirectoryEntry destinationPath = (DirectoryEntry) e.Argument;
+            long copyingSize = 0;
+            long copiedSize = 0;
+
+            //Calculating size
+            foreach (DirectoryEntry item in listToCopy)
+            {
+                if (item.Type == EntryType.Dir)
+                {
+                    DirectoryInfo di = new DirectoryInfo(item.Fullpath);
+                    copyingSize += DirSize(di);
+                }
+                else
+                {
+                    FileInfo fi = new FileInfo(item.Fullpath);
+                    copyingSize += fi.Length;
+                }
+            }
+
+            foreach (DirectoryEntry item in listToCopy)
+            {
+
+                if (item.Type == EntryType.Dir)
+                {
+                    CopyFolder(item.Fullpath, destinationPath.Fullpath + "\\" + item.Name);
+                    DirectoryInfo di = new DirectoryInfo(item.Fullpath);
+                    //copiedSize += DirSize(di);
+                    //backgroundWorker1.ReportProgress((int)(copiedSize/copyingSize)*100);
+                }
+                else
+                {
+                    FileInfo fi = new FileInfo(item.Fullpath);
+                    copiedSize += fi.Length;
+                    //File.Copy(item.Fullpath, Path.Combine(destinationPath.Fullpath, item.Name));
+                    fi.CopyTo(Path.Combine(destinationPath.Fullpath, item.Name));
+                    backgroundWorker1.ReportProgress((int)(((float)copiedSize / (float)copyingSize) * 100));
+                }
+            }
+            e.Result = destinationPath;
+
         }
 
         private void copy_handler(object sender, ExecutedRoutedEventArgs e)
@@ -342,6 +387,93 @@ namespace TPALCommander
             }
         }
 
+        //private void PasteCommandBinding(object sender, ExecutedRoutedEventArgs e)
+        //{
+        //    ListView lv = sender as ListView;
+        //    DirectoryEntry destinationPath = new DirectoryEntry();
+        //    if (listToCopy != null && (listToCopy.Count > 0))
+        //    {
+        //        switch (lv.Name)
+        //        {
+        //            case "LeftView":
+        //                destinationPath = leftPreviousEntry;
+        //                break;
+        //            case "RightView":
+        //                destinationPath = rightPreviousEntry;
+        //                break;
+        //        }
+        //        try
+        //        {
+        //            new Thread(delegate ()
+        //            {
+        //                long copyingSize = 0;
+        //                long copiedSize = 0;
+
+        //                //Dispatcher.Invoke(new Action(delegate
+        //                //{
+        //                //    StatusBar.Visibility = Visibility.Visible;
+        //                //    StatusBarLabel.Text = "Gathering Information ...";
+        //                //}));
+        //                foreach (DirectoryEntry item in listToCopy)
+        //                {
+        //                    if (item.Type == EntryType.Dir)
+        //                    {
+        //                        DirectoryInfo di = new DirectoryInfo(item.Fullpath);
+        //                        copyingSize += DirSize(di);
+        //                    }
+        //                    else
+        //                    {
+        //                        FileInfo fi = new FileInfo(item.Fullpath);
+        //                        copyingSize += fi.Length;
+        //                    }
+        //                }
+
+        //                //Dispatcher.Invoke(new Action(delegate
+        //                //{
+        //                //    StatusBarLabel.Text = "Copying ...";
+        //                //    ProgressBar.Maximum = copyingSize;
+        //                //    ProgressBar.Minimum = 0;
+        //                //}));
+
+        //                foreach (DirectoryEntry item in listToCopy)
+        //                {
+
+        //                    if (item.Type == EntryType.Dir)
+        //                    {
+        //                        CopyFolder(item.Fullpath, destinationPath.Fullpath + "\\" + item.Name);
+        //                        DirectoryInfo di = new DirectoryInfo(item.Fullpath);
+        //                        copiedSize += DirSize(di);
+        //                    }
+        //                    else
+        //                    {
+        //                        FileInfo fi = new FileInfo(item.Fullpath);
+        //                        copiedSize += fi.Length;
+        //                        File.Copy(item.Fullpath, Path.Combine(destinationPath.Fullpath, item.Name));
+        //                        fi.CopyTo(destinationPath.Fullpath + item.Name);
+        //                    }
+        //                }
+
+        //                Dispatcher.Invoke(new Action(delegate
+        //                {
+        //                    MessageBox.Show("Copying ended");
+        //                    //StatusBar.Visibility = Visibility.Hidden;
+        //                    ProgressBar.Value = 0;
+        //                    listToCopy.Clear();
+        //                    doWork(destinationPath);
+        //                }));
+        //            }).Start();
+        //        }
+        //        catch (System.UnauthorizedAccessException ex)
+        //        {
+        //            MessageBox.Show(ex.Message, ex.Source);
+        //        }
+        //        catch (System.IO.IOException ex)
+        //        {
+        //            MessageBox.Show("yhm");
+        //        }
+        //    }
+        //}
+
         private void PasteCommandBinding(object sender, ExecutedRoutedEventArgs e)
         {
             ListView lv = sender as ListView;
@@ -359,53 +491,8 @@ namespace TPALCommander
                 }
                 try
                 {
-                    new Thread(delegate ()
-                    {
-                        long copyingSize = 0;
-                        long copiedSize = 0;
-
-                        //Dispatcher.Invoke(new Action(delegate
-                        //{
-                        //    StatusBar.Visibility = Visibility.Visible;
-                        //    StatusBarLabel.Text = "Gathering Information ...";
-                        //    foreach (DirectoryEntry item in listToCopy)
-                        //    {
-                        //        FileInfo fi = new FileInfo(item.Fullpath);
-                        //        copyingSize += fi.Length;
-                        //    }
-                        //}));
-
-                        foreach (DirectoryEntry item in listToCopy)
-                        {
-                            if (item.Type == EntryType.Dir)
-                                CopyFolder(item.Fullpath, destinationPath.Fullpath + "\\" + item.Name);
-                            else
-                            {
-                                FileInfo fi = new FileInfo(item.Fullpath);
-                                copiedSize += fi.Length;
-
-                                //Dispatcher.Invoke(new Action(delegate
-                                //{
-                                //    StatusBar.Visibility = Visibility.Visible;
-                                //    StatusBarLabel.Text = "Copying ...";
-                                //    ProgressBar.Maximum = copyingSize;
-                                //    ProgressBar.Minimum = 0;
-                                //    ProgressBar.Value = copiedSize;
-                                //}));
-                                //File.Copy(item.Fullpath, Path.Combine(destinationPath.Fullpath, item.Name));
-                                fi.CopyTo(destinationPath.Fullpath);
-                            }
-                        }
-
-                        Dispatcher.Invoke(new Action(delegate
-                        {
-                            MessageBox.Show("Copying ended");
-                            StatusBar.Visibility = Visibility.Hidden;
-                            ProgressBar.Value = 0;
-                            listToCopy.Clear();
-                            doWork(destinationPath);
-                        }));
-                    }).Start();
+                    StatusBar.Visibility = Visibility.Visible;
+                    backgroundWorker1.RunWorkerAsync(destinationPath);
                 }
                 catch (System.UnauthorizedAccessException ex)
                 {
@@ -415,7 +502,39 @@ namespace TPALCommander
                 {
                     MessageBox.Show("yhm");
                 }
+                
             }
+        }
+
+        private void SetStatus(long l)
+        {
+            if (!ProgressBar.Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(DispatcherPriority.Normal, new Action<long>(SetStatus), l);
+            }
+            else
+            {
+                ProgressBar.Value= l;
+                ProgressBar.UpdateLayout();
+            }
+        }
+
+        public static long DirSize(DirectoryInfo d)
+        {
+            long size = 0;
+            // Add file sizes.
+            FileInfo[] fis = d.GetFiles();
+            foreach (FileInfo fi in fis)
+            {
+                size += fi.Length;
+            }
+            // Add subdirectory sizes.
+            DirectoryInfo[] dis = d.GetDirectories();
+            foreach (DirectoryInfo di in dis)
+            {
+                size += DirSize(di);
+            }
+            return size;
         }
 
         public void CopyFolder(String sourcePath, String destinationPath)
@@ -441,7 +560,10 @@ namespace TPALCommander
             foreach (FileInfo file in files)
             {
                 string temppath = Path.Combine(destinationPath, file.Name);
-                file.CopyTo(temppath, false);
+                //FileSecurity fs = file.GetAccessControl();
+                //fs.AddAccessRule(new FileSystemAccessRule());
+                //file.SetAccessControl(new FileSecurity(file.Name, AccessControlSections.All));
+                file.CopyTo(temppath, true);
             }
 
             foreach (DirectoryInfo subdir in dirs)
@@ -478,7 +600,12 @@ namespace TPALCommander
                 DirectoryEntry file = (DirectoryEntry)lv.SelectedItem;
                 MessageBoxResult messageBoxResult = MessageBox.Show(Properties.Resources.DeleteFileWarning + file.Name + " ?", "TPALCommander", MessageBoxButton.OKCancel);
                 if (messageBoxResult == MessageBoxResult.OK)
-                    File.Delete(file.Fullpath);
+                {
+                    if (file.Type == EntryType.Dir)
+                        DeleteFolder(file.Fullpath);
+                    else
+                        File.Delete(file.Fullpath);
+                }
             }
             DirectoryEntry de = new DirectoryEntry()
             {
@@ -495,6 +622,76 @@ namespace TPALCommander
                     break;
             }
             doWork(de);
+        }
+
+        public void DeleteFolder(String sourcePath)
+        {
+            DirectoryInfo dir = new DirectoryInfo(sourcePath);
+
+            if (!dir.Exists)
+            {
+                throw new DirectoryNotFoundException(
+                    "Source directory does not exist or could not be found: "
+                    + sourcePath);
+            }
+
+            DirectoryInfo[] dirs = dir.GetDirectories();
+            FileInfo[] files = dir.GetFiles();
+            try
+            {
+                foreach (FileInfo file in files)
+                {
+                    //file.SetAccessControl(new FileSecurity(file.FullName, AccessControlSections.All));
+                    file.Delete();
+                }
+
+                foreach (DirectoryInfo subdir in dirs)
+                {
+                    DeleteFolder(subdir.FullName);
+                }
+                //dir.SetAccessControl(new DirectorySecurity(new D/*)*/);
+                dir.Delete();
+            }
+            catch (System.UnauthorizedAccessException ex)
+            {
+                MessageBox.Show(ex.Message, ex.Source);
+            }
+        }
+
+        private void ListBoxItem_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                ListBoxItem lbi = sender as ListBoxItem;
+                if (lbi.IsSelected)
+                {
+                    lbi.IsSelected = false;
+                    lbi.Focus();
+                    switch (lbi.Name)
+                    {
+                        case "LeftView":
+                            LeftView.SelectedItems.Remove(lbi);
+                            break;
+                        case "RightView":
+                            RightView.SelectedItems.Remove(lbi);
+                            break;
+                    }
+                }
+                else if (!lbi.IsSelected)
+                {
+                    lbi.IsSelected = true;
+                    lbi.Focus();
+                    switch (lbi.Name)
+                    {
+                        case "LeftView":
+                            LeftView.SelectedItems.Add(lbi);
+                            break;
+                        case "RightView":
+                            RightView.SelectedItems.Add(lbi);
+                            break;
+                    }
+                }
+            }
         }
     }
 }

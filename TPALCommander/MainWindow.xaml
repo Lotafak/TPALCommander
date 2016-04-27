@@ -25,10 +25,10 @@
         <StatusBar x:Name="StatusBar"  DockPanel.Dock="Bottom" Height="24" Width="Auto" VerticalAlignment="Bottom"
                    ToolTip="{Binding Path=StatusBarToolTip, Source={StaticResource Resources}}" Visibility="Hidden">
             <StatusBarItem>
-                <TextBlock x:Name="StatusBarLabel" Text="Text" HorizontalAlignment="Left"/>
+                <TextBlock x:Name="StatusBarLabel" Text="Idle" HorizontalAlignment="Left"/>
             </StatusBarItem>
             <StatusBarItem>
-                <ProgressBar x:Name="ProgressBar" Height="18" Width="200" HorizontalAlignment="Right" ClipToBounds="True"/>
+                <ProgressBar x:Name="ProgressBar" Height="18" Width="200" HorizontalAlignment="Right" ClipToBounds="True" Maximum="100" Minimum="0"/>
             </StatusBarItem>
         </StatusBar>
         
@@ -56,7 +56,7 @@
             <Grid Grid.Column="0" x:Name="LeftGrid"/>
             <ListView Grid.Column="0" Grid.Row="3"  HorizontalAlignment="Stretch" 
                       Margin="1,0,2,1" Name="LeftView" 
-                      SizeChanged="List_SizeChanged" ItemsSource="{Binding}">
+                      SizeChanged="List_SizeChanged" ItemsSource="{Binding}" SelectionMode="Multiple" >
                 <ListView.CommandBindings>
                     <CommandBinding Command="Copy" Executed="CopyCommandBinding"/>
                     <CommandBinding Command="Paste" Executed="PasteCommandBinding"/>
@@ -66,6 +66,7 @@
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <EventSetter Event="MouseDoubleClick" Handler="listViewItem_MouseDoubleClick"/>
+                        <EventSetter Event="MouseEnter" Handler="ListBoxItem_MouseEnter"/>
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListView.Resources>
@@ -95,7 +96,8 @@
                 </ListView.View>
             </ListView>
             <ListView Grid.Column="1" Grid.Row="3" HorizontalAlignment="Stretch" 
-                      Margin="2,0,1,1" x:Name="RightView" ItemsSource="{Binding}" SizeChanged="List_SizeChanged">
+                      Margin="2,0,1,1" x:Name="RightView" ItemsSource="{Binding}" 
+                      SizeChanged="List_SizeChanged" SelectionMode="Multiple" >
                 <ListView.CommandBindings>
                     <CommandBinding Command="Copy" Executed="CopyCommandBinding"/>
                     <CommandBinding Command="Paste" Executed="PasteCommandBinding"/>
@@ -105,6 +107,7 @@
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <EventSetter Event="MouseDoubleClick" Handler="listViewItem_MouseDoubleClick"/>
+                        <EventSetter Event="MouseEnter" Handler="ListBoxItem_MouseEnter"/>
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListView.Resources>
