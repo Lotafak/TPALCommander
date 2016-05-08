@@ -139,12 +139,15 @@
     <value>Name</value>
   </data>
   <data name="ListHeaderSize" xml:space="preserve">
-    <value>Size</value>
+    <value>Size (kB)</value>
   </data>
   <data name="MainWindowTitle" xml:space="preserve">
     <value>TPALCommander [en]</value>
   </data>
   <data name="PolishMenuItem" xml:space="preserve">
     <value>Polish</value>
+  </data>
+  <data name="ListHeaderDate" xml:space="preserve">
+    <value>Creation Date</value>
   </data>
 </root>

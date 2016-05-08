@@ -13,12 +13,12 @@
                     <MenuItem Name="EnglishMenuItem" 
                               Header="{Binding Path=EnglishMenuItem, Source={StaticResource Resources}}" 
                                   IsCheckable="True" 
-                                  IsChecked="True" 
-                                  Click="MenuItem_Click"/>
+                                  Click="MenuItem_Click"
+                                  IsChecked="True"/>
                     <MenuItem Name="PolishMenuItem" 
                               Header="{Binding Path=PolishMenuItem, Source={StaticResource Resources}}" 
                                   IsCheckable="True" 
-                                  Click="MenuItem_Click"/>
+                                  Click="MenuItem_Click" />
                 </MenuItem>
             </MenuItem>
         </Menu>
@@ -31,11 +31,13 @@
                 <ProgressBar x:Name="ProgressBar" Height="18" Width="200" HorizontalAlignment="Right" ClipToBounds="True" Maximum="100" Minimum="0"/>
             </StatusBarItem>
         </StatusBar>
-        
+
         <Grid Background="AliceBlue" x:Name="MainGrid" >
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12*"/>
+                <ColumnDefinition Width="13*"/>
+                <ColumnDefinition Width="371*"/>
+                <ColumnDefinition Width="396*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="24"/>
@@ -44,8 +46,8 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Menu DockPanel.Dock="Top" Height="24" Grid.Column="0" Grid.Row="0">
-                <MenuItem Width="24">
+            <Menu Height="24" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3">
+                <MenuItem Width="24" Click="MenuItem_Click_1">
                     <MenuItem.Icon>
                         <Image Source="Assets/icon-refresh-128.png"
                            RenderOptions.BitmapScalingMode="Fant"/>
@@ -53,10 +55,11 @@
                 </MenuItem>
             </Menu>
 
-            <Grid Grid.Column="0" x:Name="LeftGrid"/>
+            <Grid Grid.Column="0" x:Name="LeftGrid" Grid.ColumnSpan="3"/>
             <ListView Grid.Column="0" Grid.Row="3"  HorizontalAlignment="Stretch" 
                       Margin="1,0,2,1" Name="LeftView" 
-                      SizeChanged="List_SizeChanged" ItemsSource="{Binding}" SelectionMode="Multiple" >
+                      SizeChanged="List_SizeChanged" ItemsSource="{Binding}" SelectionMode="Extended" Grid.ColumnSpan="3" 
+                      >
                 <ListView.CommandBindings>
                     <CommandBinding Command="Copy" Executed="CopyCommandBinding"/>
                     <CommandBinding Command="Paste" Executed="PasteCommandBinding"/>
@@ -66,12 +69,13 @@
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <EventSetter Event="MouseDoubleClick" Handler="listViewItem_MouseDoubleClick"/>
-                        <EventSetter Event="MouseEnter" Handler="ListBoxItem_MouseEnter"/>
+                        <!--<EventSetter Event="MouseEnter" Handler="ListBoxItem_MouseEnter"/>-->
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListView.Resources>
                     <Style TargetType="{x:Type GridViewColumnHeader}">
                         <Setter Property="HorizontalContentAlignment" Value="Left" />
+                        <EventSetter Event="Click" Handler="EventSetter_OnHandler"></EventSetter>
                     </Style>
                 </ListView.Resources>
                 <ListView.View>
@@ -85,19 +89,23 @@
                         </GridViewColumn>
                         <GridViewColumn Header="{Binding Path=ListHeaderName, Source={StaticResource Resources}}" 
                                         DisplayMemberBinding="{Binding Name}"
-                                        Width="200" />
+                                        Width="200" x:Name="LeftNameColumn" >
+                        </GridViewColumn>
                         <GridViewColumn Header="{Binding Path=ListHeaderExtension, Source={StaticResource Resources}}" 
                                         DisplayMemberBinding="{Binding Extension}"
                                         Width="60"/>
                         <GridViewColumn Header="{Binding Path=ListHeaderSize, Source={StaticResource Resources}}" 
                                         DisplayMemberBinding="{Binding Size}"
-                                        Width="100"/>
+                                        Width="80"/>
+                        <GridViewColumn Header="{Binding Path=ListHeaderDate, Source={StaticResource Resources}}" 
+                                        DisplayMemberBinding="{Binding StringDate}"
+                                        Width="120"/>
                     </GridView>
                 </ListView.View>
             </ListView>
-            <ListView Grid.Column="1" Grid.Row="3" HorizontalAlignment="Stretch" 
+            <ListView Grid.Column="3" Grid.Row="3" HorizontalAlignment="Stretch" 
                       Margin="2,0,1,1" x:Name="RightView" ItemsSource="{Binding}" 
-                      SizeChanged="List_SizeChanged" SelectionMode="Multiple" >
+                      SizeChanged="List_SizeChanged" SelectionMode="Extended" >
                 <ListView.CommandBindings>
                     <CommandBinding Command="Copy" Executed="CopyCommandBinding"/>
                     <CommandBinding Command="Paste" Executed="PasteCommandBinding"/>
@@ -107,12 +115,13 @@
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <EventSetter Event="MouseDoubleClick" Handler="listViewItem_MouseDoubleClick"/>
-                        <EventSetter Event="MouseEnter" Handler="ListBoxItem_MouseEnter"/>
+                        <!--<EventSetter Event="MouseEnter" Handler="ListBoxItem_MouseEnter"/>-->
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListView.Resources>
                     <Style TargetType="{x:Type GridViewColumnHeader}">
                         <Setter Property="HorizontalContentAlignment" Value="Left" />
+                        <EventSetter Event="Click" Handler="RightHeaderClickHandler"></EventSetter>
                     </Style>
                 </ListView.Resources>
                 <ListView.View>
@@ -133,15 +142,17 @@
                                         Width="60" />
                         <GridViewColumn Header="{Binding Path=ListHeaderSize, Source={StaticResource Resources}}" 
                                         DisplayMemberBinding="{Binding Size}"
-                                        Width="Auto"/>
+                                        Width="80"/>
+                        <GridViewColumn Header="{Binding Path=ListHeaderDate, Source={StaticResource Resources}}" 
+                                        DisplayMemberBinding="{Binding StringDate}"
+                                        Width="120"/>
                     </GridView>
                 </ListView.View>
             </ListView>
-            <ComboBox x:Name="LeftComboBox" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="75" Height="20" Margin="10,0,0,0" SelectionChanged="rightComboBox_SelectionChanged" />
-            <ComboBox x:Name="RightComboBox" Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="75" Height="20" Margin="10,0,0,0" SelectionChanged="rightComboBox_SelectionChanged"/>
-            <Label x:Name="LeftPathLabel" Grid.Column="0" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center" Height="16" Padding="0" ScrollViewer.CanContentScroll="True" RenderTransformOrigin="0.5,0.516" Margin="10,0,0,0">Smt</Label>
-            <Label x:Name="RightPathLabel" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center" Height="16" Padding="0" ScrollViewer.CanContentScroll="True" RenderTransformOrigin="0.5,0.516" Margin="10,0,0,0">Smt</Label>
+            <ComboBox x:Name="LeftComboBox" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="75" Height="20" Margin="10,2,0,2" SelectionChanged="rightComboBox_SelectionChanged" Grid.ColumnSpan="3" />
+            <ComboBox x:Name="RightComboBox" Grid.Column="3" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="75" Height="20" Margin="10,2,0,2" SelectionChanged="rightComboBox_SelectionChanged"/>
+            <Label x:Name="LeftPathLabel" Grid.Column="0" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center" Height="16" Padding="0" ScrollViewer.CanContentScroll="True" RenderTransformOrigin="0.5,0.516" Margin="10,4,0,4" Grid.ColumnSpan="3">Smt</Label>
+            <Label x:Name="RightPathLabel" Grid.Column="3" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center" Height="16" Padding="0" ScrollViewer.CanContentScroll="True" RenderTransformOrigin="0.5,0.516" Margin="10,4,0,4">Smt</Label>
         </Grid>
-        <Border BorderBrush="Black" BorderThickness="1" Height="527" VerticalAlignment="Top" Width="100"/>
     </DockPanel>
 </Window>

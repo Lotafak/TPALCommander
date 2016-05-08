@@ -18,3 +18,23 @@ C:\Users\Pyra\Documents\Visual Studio 2015\Projects\TPALCommander\TPALCommander\
 C:\Users\Pyra\Documents\Visual Studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\Dictionary1.baml
 C:\Users\Pyra\Documents\Visual Studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\TPALCommander.Properties.Resources.pl.resources
 C:\Users\Pyra\Documents\Visual Studio 2015\Projects\TPALCommander\TPALCommander\obj\Debug\pl\TPALCommander.resources.dll
+F:\TPALCommander\TPALCommander\bin\Debug\TPALCommander.exe.config
+F:\TPALCommander\TPALCommander\obj\Debug\TPALCommander.exe
+F:\TPALCommander\TPALCommander\obj\Debug\TPALCommander.pdb
+F:\TPALCommander\TPALCommander\bin\Debug\TPALCommander.exe
+F:\TPALCommander\TPALCommander\bin\Debug\TPALCommander.pdb
+F:\TPALCommander\TPALCommander\bin\Debug\pl\TPALCommander.resources.dll
+F:\TPALCommander\TPALCommander\obj\Debug\TPALCommander.csprojResolveAssemblyReference.cache
+F:\TPALCommander\TPALCommander\obj\Debug\MainWindow.g.cs
+F:\TPALCommander\TPALCommander\obj\Debug\App.g.cs
+F:\TPALCommander\TPALCommander\obj\Debug\GeneratedInternalTypeHelper.g.cs
+F:\TPALCommander\TPALCommander\obj\Debug\TPALCommander_MarkupCompile.cache
+F:\TPALCommander\TPALCommander\obj\Debug\TPALCommander_MarkupCompile.lref
+F:\TPALCommander\TPALCommander\obj\Debug\App.baml
+F:\TPALCommander\TPALCommander\obj\Debug\Dictionary1.baml
+F:\TPALCommander\TPALCommander\obj\Debug\MainWindow.baml
+F:\TPALCommander\TPALCommander\obj\Debug\TPALCommander.g.resources
+F:\TPALCommander\TPALCommander\obj\Debug\TPALCommander.Properties.Resources.resources
+F:\TPALCommander\TPALCommander\obj\Debug\TPALCommander.Properties.Resources.pl.resources
+F:\TPALCommander\TPALCommander\obj\Debug\TPALCommander.csproj.GenerateResource.Cache
+F:\TPALCommander\TPALCommander\obj\Debug\pl\TPALCommander.resources.dll

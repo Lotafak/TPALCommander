@@ -106,6 +106,15 @@ namespace TPALCommander.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Creation Date.
+        /// </summary>
+        public static string ListHeaderDate {
+            get {
+                return ResourceManager.GetString("ListHeaderDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Extension.
         /// </summary>
         public static string ListHeaderExtension {
@@ -124,7 +133,7 @@ namespace TPALCommander.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Size.
+        ///   Looks up a localized string similar to Size (kB).
         /// </summary>
         public static string ListHeaderSize {
             get {
