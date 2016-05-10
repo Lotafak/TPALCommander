@@ -143,21 +143,46 @@ namespace TPALCommander
                         CopyFolder(item.Fullpath, destinationPath.Fullpath + "\\" + item.Name);
                         DirectoryInfo di = new DirectoryInfo(item.Fullpath);
                         copiedSize += DirSize(di);
-                        backgroundWorker1.ReportProgress((int)(copiedSize / copyingSize) * 100);
+                        backgroundWorker1.ReportProgress((int) (copiedSize/copyingSize)*100);
                     }
                     else if (item.Type == EntryType.File)
                     {
-                        FileInfo fi = new FileInfo(item.Fullpath);
-                        //File.Copy(item.Fullpath, Path.Combine(destinationPath.Fullpath, item.Name));
-                        fi.CopyTo(Path.Combine(destinationPath.Fullpath, item.Name));
-                        copiedSize += fi.Length;
-                        backgroundWorker1.ReportProgress((int)(((float)copiedSize / (float)copyingSize) * 100));
-                    }
-                }
+                        //try
+                        //{
+                            FileInfo fi = new FileInfo(item.Fullpath);
+                            //File.Copy(item.Fullpath, Path.Combine(destinationPath.Fullpath, item.Name));
+                            File.SetAttributes(item.Fullpath, FileAttributes.Normal);
+                            fi.CopyTo(Path.Combine(destinationPath.Fullpath, item.Name), true);
+                            copiedSize += fi.Length;
+                            backgroundWorker1.ReportProgress((int) (((float) copiedSize/(float) copyingSize)*100));
+            //            }
+            //            catch (UnauthorizedAccessException ex)
+            //{
+            //    MessageBox.Show(ex.Message, ex.Source);
+            //    var messageBoxResult = MessageBox.Show("  asda s", "Do you really want to overwrite file ?", MessageBoxButton.OKCancel);
+            //    if (messageBoxResult == MessageBoxResult.OK)
+            //    {
+            //        FileAttributes attr = (new FileInfo(item.Fullpath)).Attributes;
+            //        File.SetAttributes(item.Fullpath, FileAttributes.Normal);
+            //        FileInfo fi = new FileInfo(item.Fullpath);
+            //        fi.CopyTo(Path.Combine(destinationPath.Fullpath, item.Name), true);
+            //    }
+            }
+        }
+                
             }
             catch (IOException ex)
             {
                 MessageBox.Show(ex.Message, ex.Source);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                MessageBox.Show(ex.Message, ex.Source);
+                //var messageBoxResult = MessageBox.Show("  asda s", "Do you really want to overwrite file ?", MessageBoxButton.OKCancel);
+                //if (messageBoxResult == MessageBoxResult.OK)
+                //{
+                //    FileAttributes attr = (new FileInfo();)
+                //}
             }
             e.Result = destinationPath;
 
