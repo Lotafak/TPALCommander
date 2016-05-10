@@ -70,6 +70,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CultureResources.cs" />
+    <Compile Include="IconConverter.cs" />
+    <Compile Include="ImageUtilities.cs" />
     <Compile Include="IntComparer.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

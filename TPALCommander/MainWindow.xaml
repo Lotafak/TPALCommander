@@ -4,8 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TPALCommander"
+        xmlns:drawing="clr-namespace:System.Drawing;assembly=System.Drawing"
         mc:Ignorable="d"
-        Title="{Binding Path=MainWindowTitle, Source={StaticResource Resources}}" Height="600" Width="800" Loaded="Window_Loaded">
+        Title="{Binding Path=MainWindowTitle, Source={StaticResource Resources}}" Height="768" Width="1366" Loaded="Window_Loaded">
     <DockPanel LastChildFill="True">
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="{Binding Path=FileMenuItem, Source={StaticResource Resources}}">
@@ -83,7 +84,10 @@
                         <GridViewColumn>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Image Source="{Binding Imagepath}" Width="20"/>
+                                    <DataTemplate.Resources>
+                                        <local:IconConverter x:Key="IconConverter" />
+                                    </DataTemplate.Resources>
+                                    <Image Source="{Binding Icon, Converter={StaticResource IconConverter}}" />
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
@@ -128,8 +132,14 @@
                     <GridView>
                         <GridViewColumn>
                             <GridViewColumn.CellTemplate>
+                                <!--<DataTemplate>
+                                    <Image Source="{Binding Imagepath}" Width="20" />
+                                </DataTemplate>-->
                                 <DataTemplate>
-                                    <Image Source="{Binding Imagepath}" Width="20"/>
+                                    <DataTemplate.Resources>
+                                        <local:IconConverter x:Key="IconConverter" />
+                                    </DataTemplate.Resources>
+                                    <Image Source="{Binding Icon, Converter={StaticResource IconConverter}}" />
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
