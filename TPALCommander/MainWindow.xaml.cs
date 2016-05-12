@@ -11,7 +11,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using TPALCommander;
 using TPALCommander.Properties;
 using ComboBox = System.Windows.Controls.ComboBox;
 using ListView = System.Windows.Controls.ListView;
@@ -41,7 +40,7 @@ public class DirectoryEntry
     {
         get
         {
-            return String.Format(this.DateFormatter, this.Date);
+            return String.Format(DateFormatter, Date);
         }
         set { StringDate = value; }
     }
@@ -78,11 +77,13 @@ namespace TPALCommander
         private ObservableCollection<DirectoryEntry> subEntries = new ObservableCollection<DirectoryEntry>();
         private List<DirectoryEntry> listToCopy = new List<DirectoryEntry>();
         private List<DirectoryEntry> listToCut = new List<DirectoryEntry>();
-        private DirectoryEntry leftPreviousEntry = null;
-        private DirectoryEntry rightPreviousEntry = null;
-        private int ListHeaderSize = 50;
+        private DirectoryEntry _leftPreviousEntry = null;
+        private DirectoryEntry _rightPreviousEntry = null;
+        private readonly int _listHeaderSize = 50;
+        private long _bytesToCopy = 0;
+        private long _bytesCopied = 0;
 
-        private BackgroundWorker backgroundWorker1;
+        private readonly BackgroundWorker _backgroundWorker1;
 
         public MainWindow()
         {
@@ -92,13 +93,13 @@ namespace TPALCommander
             LeftView.SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Disabled);
             RightView.SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Disabled);
 
-            backgroundWorker1 = new BackgroundWorker();
-            backgroundWorker1.WorkerReportsProgress = true;
-            backgroundWorker1.WorkerSupportsCancellation = true;
-            backgroundWorker1.DoWork += new DoWorkEventHandler(backgroundWorker1_DoWork);
-            backgroundWorker1.RunWorkerCompleted +=
+            _backgroundWorker1 = new BackgroundWorker();
+            _backgroundWorker1.WorkerReportsProgress = true;
+            _backgroundWorker1.WorkerSupportsCancellation = true;
+            _backgroundWorker1.DoWork += new DoWorkEventHandler(backgroundWorker1_DoWork);
+            _backgroundWorker1.RunWorkerCompleted +=
                 new RunWorkerCompletedEventHandler(backgroundWorker1_RunWorkerCompleted);
-            backgroundWorker1.ProgressChanged += new ProgressChangedEventHandler(backgroundWorker1_ProgressChanged);
+            _backgroundWorker1.ProgressChanged += new ProgressChangedEventHandler(backgroundWorker1_ProgressChanged);
         }
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -114,10 +115,10 @@ namespace TPALCommander
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
-
             DirectoryEntry destinationPath = (DirectoryEntry)e.Argument;
-            long copyingSize = 0;
-            long copiedSize = 0;
+            _bytesToCopy = 0;
+            _bytesCopied = 0;
+
             try
             {
                 //Calculating size
@@ -126,12 +127,12 @@ namespace TPALCommander
                     if (item.Type == EntryType.Dir)
                     {
                         DirectoryInfo di = new DirectoryInfo(item.Fullpath);
-                        copyingSize += DirSize(di);
+                        _bytesToCopy += DirSize(di);
                     }
                     else if (item.Type == EntryType.File)
                     {
                         FileInfo fi = new FileInfo(item.Fullpath);
-                        copyingSize += fi.Length;
+                        _bytesToCopy += fi.Length;
                     }
                 }
 
@@ -140,36 +141,54 @@ namespace TPALCommander
 
                     if (item.Type == EntryType.Dir)
                     {
+                        if (Directory.Exists(Path.Combine(destinationPath.Fullpath, item.Name)))
+                        {
+                            var result = MessageBox.Show("Nadpisać folder: " + Path.Combine(destinationPath.Fullpath, item.Name) + "?", 
+                                "Folder istnieje!",
+                                MessageBoxButton.OKCancel);
+                            if (result == MessageBoxResult.OK)
+                                DeleteFolder(Path.Combine(destinationPath.Fullpath, item.Name));
+                            else
+                            {
+                                break;
+                            }
+                        }
                         CopyFolder(item.Fullpath, destinationPath.Fullpath + "\\" + item.Name);
                         DirectoryInfo di = new DirectoryInfo(item.Fullpath);
-                        copiedSize += DirSize(di);
-                        backgroundWorker1.ReportProgress((int) (copiedSize/copyingSize)*100);
+                        _bytesCopied += DirSize(di);
+                        _backgroundWorker1.ReportProgress((int)(_bytesCopied / (float)_bytesToCopy) * 100);
                     }
                     else if (item.Type == EntryType.File)
                     {
+
+                        //SecurityPermission perm = 
+                            //new SecurityPermission(SecurityPermissionFlag.UnmanagedCode);
+
                         //try
                         //{
-                            FileInfo fi = new FileInfo(item.Fullpath);
-                            //File.Copy(item.Fullpath, Path.Combine(destinationPath.Fullpath, item.Name));
-                            File.SetAttributes(item.Fullpath, FileAttributes.Normal);
-                            fi.CopyTo(Path.Combine(destinationPath.Fullpath, item.Name), true);
-                            copiedSize += fi.Length;
-                            backgroundWorker1.ReportProgress((int) (((float) copiedSize/(float) copyingSize)*100));
-            //            }
-            //            catch (UnauthorizedAccessException ex)
-            //{
-            //    MessageBox.Show(ex.Message, ex.Source);
-            //    var messageBoxResult = MessageBox.Show("  asda s", "Do you really want to overwrite file ?", MessageBoxButton.OKCancel);
-            //    if (messageBoxResult == MessageBoxResult.OK)
-            //    {
-            //        FileAttributes attr = (new FileInfo(item.Fullpath)).Attributes;
-            //        File.SetAttributes(item.Fullpath, FileAttributes.Normal);
-            //        FileInfo fi = new FileInfo(item.Fullpath);
-            //        fi.CopyTo(Path.Combine(destinationPath.Fullpath, item.Name), true);
-            //    }
-            }
-        }
-                
+
+                        FileInfo fi = new FileInfo(item.Fullpath);
+                        if (File.Exists(Path.Combine(destinationPath.Fullpath, item.Name)))
+                        {
+                            var result = MessageBox.Show("Czy chcesz nadpisać plik: " + Path.Combine(destinationPath.Fullpath, item.Name) + "?", 
+                                "Plik istnieje!",
+                                MessageBoxButton.OKCancel);
+                            if (result == MessageBoxResult.OK)
+                                File.Delete(Path.Combine(destinationPath.Fullpath, item.Name));
+                            else
+                            {
+                                break;
+                            }
+                        }
+                        fi.CopyTo(Path.Combine(destinationPath.Fullpath, item.Name), true);
+                        _bytesCopied += fi.Length;
+                        _backgroundWorker1.ReportProgress((int)(_bytesCopied / (float)_bytesToCopy * 100));
+                    }
+                    Dispatcher.BeginInvoke(DispatcherPriority.Background, 
+                        new Action(() => 
+                        DoWork(destinationPath)
+                        ));
+                }
             }
             catch (IOException ex)
             {
@@ -178,22 +197,16 @@ namespace TPALCommander
             catch (UnauthorizedAccessException ex)
             {
                 MessageBox.Show(ex.Message, ex.Source);
-                //var messageBoxResult = MessageBox.Show("  asda s", "Do you really want to overwrite file ?", MessageBoxButton.OKCancel);
-                //if (messageBoxResult == MessageBoxResult.OK)
-                //{
-                //    FileAttributes attr = (new FileInfo();)
-                //}
             }
+
             e.Result = destinationPath;
-
         }
 
-        private void copy_handler(object sender, ExecutedRoutedEventArgs e)
-        {
-            MessageBox.Show("Copy!", "Copy");
-            ListView listView = sender as ListView;
-            //listView.
-        }
+        //private void copy_handler(object sender, ExecutedRoutedEventArgs e)
+        //{
+        //    MessageBox.Show("Copy!", "Copy");
+        //    ListView listView = sender as ListView;
+        //}
 
         private void listViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
@@ -229,11 +242,11 @@ namespace TPALCommander
                 gView.Columns[1].Width = (workingWidth -
                                           (gView.Columns[2].ActualWidth + gView.Columns[0].ActualWidth +
                                            gView.Columns[3].ActualWidth + 10 + gView.Columns[4].ActualWidth)) >
-                                         ListHeaderSize
+                                         _listHeaderSize
                     ? workingWidth -
                       (gView.Columns[2].ActualWidth + gView.Columns[0].ActualWidth + gView.Columns[3].ActualWidth +
                        gView.Columns[4].ActualWidth)
-                    : ListHeaderSize;
+                    : _listHeaderSize;
             }
         }
 
@@ -292,12 +305,12 @@ namespace TPALCommander
                 {
                     if (!entry.View)
                     {
-                        if (item.Equals(leftPreviousEntry.Fullpath))
+                        if (item.Equals(_leftPreviousEntry.Fullpath))
                             LeftComboBox.SelectedItem = item;
                     }
                     else
                     {
-                        if (item.Equals(rightPreviousEntry.Fullpath))
+                        if (item.Equals(_rightPreviousEntry.Fullpath))
                             RightComboBox.SelectedItem = item;
                     }
                 }
@@ -339,7 +352,6 @@ namespace TPALCommander
                 {
                     Fullpath = dir.FullName,
                     Name = dir.Name,
-                    //Imagepath = "Assets/Folder-icon.png",
                     Icon = ImageUtilities.GetRegisteredIcon(dir.FullName),
                     Type = EntryType.Dir,
                     Date = Directory.GetCreationTime(s)
@@ -361,7 +373,6 @@ namespace TPALCommander
                     Type = EntryType.File,
                     Icon = ImageUtilities.GetRegisteredIcon(file.FullName),
                     Size = Math.Round(file.Length / 1024.0).ToString("n", nfi),
-                    //ToString("n", nfi)
                     Fullpath = file.FullName,
                     Date = Directory.GetCreationTime(f)
                 };
@@ -377,14 +388,14 @@ namespace TPALCommander
                 LeftView.DataContext = collection;
                 LeftPathLabel.Content =
                     String.Format(entry.Fullpath.EndsWith("\\") ? (entry.Fullpath) : entry.Fullpath + "\\");
-                leftPreviousEntry = entry;
+                _leftPreviousEntry = entry;
             }
             else
             {
                 RightView.DataContext = collection;
                 RightPathLabel.Content =
                     String.Format(entry.Fullpath.EndsWith("\\") ? (entry.Fullpath) : entry.Fullpath + "\\");
-                rightPreviousEntry = entry;
+                _rightPreviousEntry = entry;
             }
         }
 
@@ -459,7 +470,7 @@ namespace TPALCommander
                     MessageBox.Show(item.Fullpath);
                 }
         }
-
+        
         private void PasteCommandBinding(object sender, ExecutedRoutedEventArgs e)
         {
             ListView lv = sender as ListView;
@@ -470,22 +481,22 @@ namespace TPALCommander
                     switch (lv.Name)
                     {
                         case "LeftView":
-                            destinationPath = leftPreviousEntry;
+                            destinationPath = _leftPreviousEntry;
                             break;
                         case "RightView":
-                            destinationPath = rightPreviousEntry;
+                            destinationPath = _rightPreviousEntry;
                             break;
                     }
                 try
                 {
                     StatusBar.Visibility = Visibility.Visible;
-                    backgroundWorker1.RunWorkerAsync(destinationPath);
+                    _backgroundWorker1.RunWorkerAsync(destinationPath);
                 }
                 catch (System.UnauthorizedAccessException ex)
                 {
                     MessageBox.Show(ex.Message, ex.Source);
                 }
-                catch (System.IO.IOException ex)
+                catch (IOException )
                 {
                     MessageBox.Show("yhm");
                 }
@@ -546,6 +557,8 @@ namespace TPALCommander
             foreach (FileInfo file in files)
             {
                 string temppath = Path.Combine(destinationPath, file.Name);
+                if (File.Exists(temppath))
+                    File.Delete(temppath);
                 file.CopyTo(temppath, true);
             }
 
@@ -575,22 +588,32 @@ namespace TPALCommander
                 {
                     foreach (DirectoryEntry directoryEntry in lv.SelectedItems)
                     {
-                        File.Delete(directoryEntry.Fullpath);
+                        if (directoryEntry.Type == EntryType.Dir)
+                            DeleteFolder(directoryEntry.Fullpath);
+                        else
+                            File.Delete(directoryEntry.Fullpath);
                     }
                 }
             }
             else if (lv != null && lv.SelectedItem != null)
             {
-                DirectoryEntry file = (DirectoryEntry)lv.SelectedItem;
-                MessageBoxResult messageBoxResult =
-                    MessageBox.Show(Properties.Resources.DeleteFileWarning + file.Name + " ?", "TPALCommander",
-                        MessageBoxButton.OKCancel);
-                if (messageBoxResult == MessageBoxResult.OK)
+                try
                 {
-                    if (file.Type == EntryType.Dir)
-                        DeleteFolder(file.Fullpath);
-                    else
-                        File.Delete(file.Fullpath);
+                    DirectoryEntry file = (DirectoryEntry) lv.SelectedItem;
+                    MessageBoxResult messageBoxResult =
+                        MessageBox.Show(Properties.Resources.DeleteFileWarning + file.Name + " ?", "TPALCommander",
+                            MessageBoxButton.OKCancel);
+                    if (messageBoxResult == MessageBoxResult.OK)
+                    {
+                        if (file.Type == EntryType.Dir)
+                            DeleteFolder(file.Fullpath);
+                        else
+                            File.Delete(file.Fullpath);
+                    }
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    MessageBox.Show(ex.Message, ex.Source);
                 }
             }
             DirectoryEntry de = new DirectoryEntry()
@@ -602,10 +625,10 @@ namespace TPALCommander
                 switch (lv.Name)
                 {
                     case "LeftView":
-                        de = leftPreviousEntry;
+                        de = _leftPreviousEntry;
                         break;
                     case "RightView":
-                        de = rightPreviousEntry;
+                        de = _rightPreviousEntry;
                         break;
                 }
             DoWork(de);
@@ -651,14 +674,14 @@ namespace TPALCommander
         private void EventSetter_OnHandler(object sender, RoutedEventArgs e)
         {
             GridViewColumnHeader gridViewColumnHeader = sender as GridViewColumnHeader;
-            if (gridViewColumnHeader != null && leftPreviousEntry != null && gridViewColumnHeader.Content != null)
+            if (gridViewColumnHeader != null && _leftPreviousEntry != null && gridViewColumnHeader.Content != null)
             {
                 ObservableCollection<DirectoryEntry> fileTemp = new ObservableCollection<DirectoryEntry>();
                 ObservableCollection<DirectoryEntry> folderTemp = new ObservableCollection<DirectoryEntry>();
                 ObservableCollection<DirectoryEntry> orderedTemp = new ObservableCollection<DirectoryEntry>();
                 ObservableCollection<DirectoryEntry> whole = new ObservableCollection<DirectoryEntry>();
 
-                leftPreviousEntry.OrderBy = !leftPreviousEntry.OrderBy;
+                _leftPreviousEntry.OrderBy = !_leftPreviousEntry.OrderBy;
 
                 fileTemp =
                     new ObservableCollection<DirectoryEntry>(((ObservableCollection<DirectoryEntry>)
@@ -672,26 +695,26 @@ namespace TPALCommander
 
                 if (gridViewColumnHeader.Content.Equals(Properties.Resources.ListHeaderName))
                 {
-                    orderedTemp = leftPreviousEntry.OrderBy
+                    orderedTemp = _leftPreviousEntry.OrderBy
                                ? new ObservableCollection<DirectoryEntry>(fileTemp.OrderBy(i => i.Name))
                                : new ObservableCollection<DirectoryEntry>(fileTemp.OrderByDescending(i => i.Name));
                 }
 
                 else if (gridViewColumnHeader.Content.Equals(Properties.Resources.ListHeaderDate))
                 {
-                    orderedTemp = leftPreviousEntry.OrderBy
+                    orderedTemp = _leftPreviousEntry.OrderBy
                         ? new ObservableCollection<DirectoryEntry>(fileTemp.OrderBy(i => i.Date))
                         : new ObservableCollection<DirectoryEntry>(fileTemp.OrderByDescending(i => i.Date));
                 }
                 else if (gridViewColumnHeader.Content.Equals(Properties.Resources.ListHeaderExtension))
                 {
-                    orderedTemp = leftPreviousEntry.OrderBy
+                    orderedTemp = _leftPreviousEntry.OrderBy
                         ? new ObservableCollection<DirectoryEntry>(fileTemp.OrderBy(i => i.Extension))
                         : new ObservableCollection<DirectoryEntry>(fileTemp.OrderByDescending(i => i.Extension));
                 }
                 else if (gridViewColumnHeader.Content.Equals(Properties.Resources.ListHeaderSize))
                 {
-                    orderedTemp = leftPreviousEntry.OrderBy
+                    orderedTemp = _leftPreviousEntry.OrderBy
                         ? new ObservableCollection<DirectoryEntry>(fileTemp.OrderBy(i => i.Size, new IntComparer()))
                         : new ObservableCollection<DirectoryEntry>(fileTemp.OrderByDescending(i => i.Size, new IntComparer()));
                 }
@@ -717,14 +740,14 @@ namespace TPALCommander
         private void RightHeaderClickHandler(object sender, RoutedEventArgs e)
         {
             GridViewColumnHeader gridViewColumnHeader = sender as GridViewColumnHeader;
-            if (gridViewColumnHeader != null && rightPreviousEntry != null && gridViewColumnHeader.Content != null)
+            if (gridViewColumnHeader != null && _rightPreviousEntry != null && gridViewColumnHeader.Content != null)
             {
                 ObservableCollection<DirectoryEntry> fileTemp = new ObservableCollection<DirectoryEntry>();
                 ObservableCollection<DirectoryEntry> folderTemp = new ObservableCollection<DirectoryEntry>();
                 ObservableCollection<DirectoryEntry> orderedTemp = new ObservableCollection<DirectoryEntry>();
                 ObservableCollection<DirectoryEntry> whole = new ObservableCollection<DirectoryEntry>();
 
-                rightPreviousEntry.OrderBy = !rightPreviousEntry.OrderBy;
+                _rightPreviousEntry.OrderBy = !_rightPreviousEntry.OrderBy;
 
                 fileTemp =
                     new ObservableCollection<DirectoryEntry>(((ObservableCollection<DirectoryEntry>)
@@ -738,26 +761,26 @@ namespace TPALCommander
 
                 if (gridViewColumnHeader.Content.Equals(Properties.Resources.ListHeaderName))
                 {
-                    orderedTemp = rightPreviousEntry.OrderBy
+                    orderedTemp = _rightPreviousEntry.OrderBy
                                ? new ObservableCollection<DirectoryEntry>(fileTemp.OrderBy(i => i.Name))
                                : new ObservableCollection<DirectoryEntry>(fileTemp.OrderByDescending(i => i.Name));
                 }
 
                 else if (gridViewColumnHeader.Content.Equals(Properties.Resources.ListHeaderDate))
                 {
-                    orderedTemp = rightPreviousEntry.OrderBy
+                    orderedTemp = _rightPreviousEntry.OrderBy
                         ? new ObservableCollection<DirectoryEntry>(fileTemp.OrderBy(i => i.Date))
                         : new ObservableCollection<DirectoryEntry>(fileTemp.OrderByDescending(i => i.Date));
                 }
                 else if (gridViewColumnHeader.Content.Equals(Properties.Resources.ListHeaderExtension))
                 {
-                    orderedTemp = rightPreviousEntry.OrderBy
+                    orderedTemp = _rightPreviousEntry.OrderBy
                         ? new ObservableCollection<DirectoryEntry>(fileTemp.OrderBy(i => i.Extension))
                         : new ObservableCollection<DirectoryEntry>(fileTemp.OrderByDescending(i => i.Extension));
                 }
                 else if (gridViewColumnHeader.Content.Equals(Properties.Resources.ListHeaderSize))
                 {
-                    orderedTemp = rightPreviousEntry.OrderBy
+                    orderedTemp = _rightPreviousEntry.OrderBy
                         ? new ObservableCollection<DirectoryEntry>(fileTemp.OrderBy(i => i.Size, new IntComparer()))
                         : new ObservableCollection<DirectoryEntry>(fileTemp.OrderByDescending(i => i.Size, new IntComparer()));
                 }

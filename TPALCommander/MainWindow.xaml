@@ -26,7 +26,7 @@
         <StatusBar x:Name="StatusBar"  DockPanel.Dock="Bottom" Height="24" Width="Auto" VerticalAlignment="Bottom"
                    ToolTip="{Binding Path=StatusBarToolTip, Source={StaticResource Resources}}" Visibility="Hidden">
             <StatusBarItem>
-                <TextBlock x:Name="StatusBarLabel" Text="Idle" HorizontalAlignment="Left"/>
+                <TextBlock x:Name="StatusBarLabel" Text="Copying..." HorizontalAlignment="Left"/>
             </StatusBarItem>
             <StatusBarItem>
                 <ProgressBar x:Name="ProgressBar" Height="18" Width="200" HorizontalAlignment="Right" ClipToBounds="True" Maximum="100" Minimum="0"/>
@@ -47,7 +47,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Menu Height="24" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3">
+            <Menu Height="24" Grid.Row="0" Grid.ColumnSpan="4">
                 <MenuItem Width="24" Click="MenuItem_Click_1">
                     <MenuItem.Icon>
                         <Image Source="Assets/icon-refresh-128.png"
@@ -56,7 +56,7 @@
                 </MenuItem>
             </Menu>
 
-            <Grid Grid.Column="0" x:Name="LeftGrid" Grid.ColumnSpan="3"/>
+            <!--<Grid Grid.Column="0" x:Name="LeftGrid" Grid.ColumnSpan="3"/>-->
             <ListView Grid.Column="0" Grid.Row="3"  HorizontalAlignment="Stretch" 
                       Margin="1,0,2,1" Name="LeftView" 
                       SizeChanged="List_SizeChanged" ItemsSource="{Binding}" SelectionMode="Extended" Grid.ColumnSpan="3" 
