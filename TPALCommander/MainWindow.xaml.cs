@@ -160,24 +160,18 @@ namespace TPALCommander
                     }
                     else if (item.Type == EntryType.File)
                     {
-
-                        //SecurityPermission perm = 
-                            //new SecurityPermission(SecurityPermissionFlag.UnmanagedCode);
-
-                        //try
-                        //{
-
                         FileInfo fi = new FileInfo(item.Fullpath);
-                        if (File.Exists(Path.Combine(destinationPath.Fullpath, item.Name)))
+                        var filePath = Path.Combine(destinationPath.Fullpath, item.Name);
+                        if (File.Exists(filePath))
                         {
-                            var result = MessageBox.Show("Czy chcesz nadpisać plik: " + Path.Combine(destinationPath.Fullpath, item.Name) + "?", 
+                            var result = MessageBox.Show("Czy chcesz nadpisać plik: " + filePath + "?", 
                                 "Plik istnieje!",
                                 MessageBoxButton.OKCancel);
                             if (result == MessageBoxResult.OK)
-                                File.Delete(Path.Combine(destinationPath.Fullpath, item.Name));
+                                File.Delete(filePath);
                             else
                             {
-                                break;
+                                continue;
                             }
                         }
                         fi.CopyTo(Path.Combine(destinationPath.Fullpath, item.Name), true);
@@ -201,12 +195,6 @@ namespace TPALCommander
 
             e.Result = destinationPath;
         }
-
-        //private void copy_handler(object sender, ExecutedRoutedEventArgs e)
-        //{
-        //    MessageBox.Show("Copy!", "Copy");
-        //    ListView listView = sender as ListView;
-        //}
 
         private void listViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
@@ -381,8 +369,7 @@ namespace TPALCommander
                     d.Extension = file.Extension.Substring(1);
                 collection.Add(d);
             }
-
-            //if(sender)
+            
             if (!entry.View)
             {
                 LeftView.DataContext = collection;
@@ -719,14 +706,12 @@ namespace TPALCommander
                         : new ObservableCollection<DirectoryEntry>(fileTemp.OrderByDescending(i => i.Size, new IntComparer()));
                 }
 
-                try
-                {
+                if( ((ObservableCollection<DirectoryEntry>)gridViewColumnHeader.DataContext).Any(i => i.Type == EntryType.Up) )
+                { 
                     whole.Add(
-                        ((ObservableCollection<DirectoryEntry>)gridViewColumnHeader.DataContext).First(
+                        ((ObservableCollection<DirectoryEntry>)gridViewColumnHeader.DataContext).FirstOrDefault(
                             i => i.Type == EntryType.Up));
                 }
-
-                catch (InvalidOperationException) { }
 
                 foreach (var o in folderTemp.Union(orderedTemp))
                 {
@@ -785,14 +770,12 @@ namespace TPALCommander
                         : new ObservableCollection<DirectoryEntry>(fileTemp.OrderByDescending(i => i.Size, new IntComparer()));
                 }
 
-                try
+                if (((ObservableCollection<DirectoryEntry>)gridViewColumnHeader.DataContext).Any(i => i.Type == EntryType.Up))
                 {
                     whole.Add(
                         ((ObservableCollection<DirectoryEntry>)gridViewColumnHeader.DataContext).First(
                             i => i.Type == EntryType.Up));
                 }
-
-                catch (InvalidOperationException) { }
 
                 foreach (var o in folderTemp.Union(orderedTemp))
                 {
