@@ -172,6 +172,7 @@ namespace TPALCommander
                             else
                             {
                                 continue;
+                                // Testowy komentarz
                             }
                         }
                         fi.CopyTo(Path.Combine(destinationPath.Fullpath, item.Name), true);
